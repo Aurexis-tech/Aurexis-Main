@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "comment": "Root project: serves the byte-exact static baseline (no build) AND the /api serverless functions. buildCommand stays null (static is served as-is, outputDirectory '.'); installCommand is now the default so /api deps (@anthropic-ai/sdk, @supabase/supabase-js) install. The React app under ./react is a SEPARATE Vercel project and ignores this file.",
   "framework": null,
   "buildCommand": null,
-  "installCommand": null,
   "outputDirectory": "."
 }
