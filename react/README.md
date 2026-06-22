@@ -40,9 +40,12 @@ timing and risk the visuals. So we **didn't**. The strategy is
   `Blueprint`, `Forge`, `Sentinel`, `Dashboard`, `Grow`). Each renders the
   **exact same markup** as the baseline — same classes, same element IDs
   (`#bgcanvas`, `#opps`, `#tiles`, `#price`, `#geo`, `#revChart`, the radar
-  nodes, …). Containers the engine fills (e.g. `#questions`, `#opps`, `#checks`,
-  `#archSvg`, `#tiles`) are rendered **empty**: React mounts the container, the
-  ported engine owns its inner DOM. They never fight over the same subtree.
+  nodes, …). For the **imperative-island** screens, containers the engine fills
+  (e.g. `#questions`, `#checks`, `#archSvg`, `#tiles`) are rendered **empty**:
+  React mounts the container, the ported engine owns its inner DOM — they never
+  fight over the same subtree. **Blueprint and Discover are the exception** — they
+  render their content declaratively from `lib/` (see
+  [Architecture: declarative screens + imperative islands](#architecture-declarative-screens--imperative-islands)).
 - **`src/App.jsx`** — the shell. Renders the canvas, intro, header, stepper rail
   and all stage screens (in the baseline's DOM order), then calls `boot()` once
   in a mount `useEffect`. Navigation, the stepper and every sequence are owned by
@@ -59,6 +62,57 @@ Two deliberate, behaviour-preserving adaptations for the React host:
 
 Fonts (Fraunces + Hanken Grotesk) are loaded via the same Google Fonts `<link>`
 tags in `index.html`, identical to the baseline `<head>`.
+
+## Architecture: declarative screens + imperative islands
+
+**This split is the intended, final architecture — not an incomplete migration.**
+We deliberately stop here: the screens that benefit from declarative React are
+declarative, and the screens whose value is timed animation stay as imperative
+islands. Both halves are held to the same parity bar.
+
+- **Declarative (React JSX): `Blueprint`, `Discover`.** These render their content
+  from pure functions in `lib/` — `blueprintModel(state)` and `computeOpps(state)`
+  (the opportunity scoring, extracted verbatim and proven byte-identical). The
+  component subscribes via `lib/bridge.js` and renders the current shared `state`
+  when the engine enters the screen. Discover keeps its card behaviours (fit%
+  count-up, entry stagger, hover tilt — `lib/anim.js`) as a small entry effect, so
+  motion and `prefers-reduced-motion` handling are unchanged.
+
+- **Imperative islands (by design):** the **Profile** radar, the **Forge** build
+  sequence (log + architecture diagram), the **Sentinel** dial / security audit,
+  the **Dashboard** live charts + economic model, the **Grow / Studio** GEO ramp,
+  and the **canvas** constellation background. These are kept imperative on
+  purpose: their value *is* the hand-tuned timed animation (`await wait(ms)`
+  sequences, `requestAnimationFrame` loops, manual SVG path math). An idiomatic
+  React rewrite would risk visual/timing parity for **no user-visible benefit** —
+  so the ported engine continues to own those subtrees.
+
+- **`lib/bridge.js` is the seam.** `subscribeScreen(key, fn)` / `notifyScreen(key)`
+  let a single screen be migrated to declarative React **in isolation**: navigation
+  stays imperative (the engine still owns `.on` toggling and the shared `state`),
+  and on entry the engine calls `notifyScreen(...)` so exactly one renderer — React
+  *or* the engine — writes that screen's DOM subtree. No double-writing, no
+  conflict, no big-bang rewrite.
+
+- **Fidelity model.** `styles.css` is **byte-identical** to the baseline (blob
+  `83fa9618…`). Equivalence is enforced by **visual + reflow + behavioural parity**
+  across **7 viewports × 8 stages** (`parity/parity-summary.json`), re-run on every
+  change. See [Verification](#verification).
+
+### Migrating another screen later (optional)
+
+The architecture is stable as-is; no further migration is required. If you ever
+choose to migrate one of the islands:
+
+1. Branch off `main`.
+2. Use the **bridge pattern**: extract that screen's data derivation into a pure
+   function in `lib/` (don't reword/recompute — verify byte-identical output),
+   render it declaratively, and `subscribeScreen`/`notifyScreen` on entry. Remove
+   only that screen's imperative rendering from `engine.js`.
+3. **Keep the animated parts as island effects** (reuse the engine's helpers in a
+   `useEffect`) rather than reimplementing motion as React state.
+4. It **must pass `npm run parity` and `node parity/behavior-check.mjs`** (every
+   stage × viewport `< 0.20%`, reflow `match`, behaviour identical) before merge.
 
 ## File tree
 
@@ -78,11 +132,13 @@ react/
 │   │   ├── dom.js          # $, $$, wait, RM, GC
 │   │   ├── state.js        # STEPS, state
 │   │   ├── data.js         # all data constants (verbatim)
-│   │   ├── logic.js        # pure functions (verbatim)
+│   │   ├── logic.js        # pure fns + blueprintModel() / computeOpps() derivations
+│   │   ├── bridge.js       # subscribeScreen/notifyScreen — engine→React seam
+│   │   ├── anim.js         # Discover card helpers (countUp/enterCards/attachTilt)
 │   │   └── engine.js       # imperative renderers + sequences + boot()
 │   └── screens/
-│       ├── Intro.jsx  Profile.jsx  Discover.jsx  Blueprint.jsx
-│       └── Forge.jsx  Sentinel.jsx Dashboard.jsx Grow.jsx
+│       ├── Intro.jsx  Profile.jsx  Discover.jsx*  Blueprint.jsx*   (* = declarative)
+│       └── Forge.jsx  Sentinel.jsx Dashboard.jsx Grow.jsx          (imperative islands)
 └── parity/                 # verification (see below)
     ├── run-parity.mjs      # responsive visual parity: 7 viewports × 8 stages
     ├── behavior-check.mjs  # behavioural parity: driven interactions
