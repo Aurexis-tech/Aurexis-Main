@@ -1,0 +1,639 @@
+{
+  "pass": true,
+  "threshold": 0.2,
+  "reflowsMobileToDesktop": true,
+  "viewports": [
+    {
+      "name": "375",
+      "w": 375,
+      "h": 5000
+    },
+    {
+      "name": "600",
+      "w": 600,
+      "h": 4200
+    },
+    {
+      "name": "710",
+      "w": 710,
+      "h": 3600
+    },
+    {
+      "name": "740",
+      "w": 740,
+      "h": 3600
+    },
+    {
+      "name": "768",
+      "w": 768,
+      "h": 3200
+    },
+    {
+      "name": "1024",
+      "w": 1024,
+      "h": 2800
+    },
+    {
+      "name": "1440",
+      "w": 1440,
+      "h": 2400
+    }
+  ],
+  "results": {
+    "375": {
+      "w": 375,
+      "h": 5000,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 2,
+          "dash_ustats": 2,
+          "dash_charts": 1
+        },
+        "react": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 2,
+          "dash_ustats": 2,
+          "dash_charts": 1
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 47,
+          "pct": 0.002506666666666667,
+          "dimsMatch": true,
+          "dims": "375x5000"
+        }
+      ],
+      "worst": 0.002506666666666667,
+      "pass": true
+    },
+    "600": {
+      "w": 600,
+      "h": 4200,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 2,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "react": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 2,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 125,
+          "pct": 0.00496031746031746,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "600x4200"
+        }
+      ],
+      "worst": 0.00496031746031746,
+      "pass": true
+    },
+    "710": {
+      "w": 710,
+      "h": 3600,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "react": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 2,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 5,
+          "pct": 0.00019561815336463224,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        }
+      ],
+      "worst": 0.00019561815336463224,
+      "pass": true
+    },
+    "740": {
+      "w": 740,
+      "h": 3600,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 3,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "react": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 3,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 1
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "740x3600"
+        }
+      ],
+      "worst": 0,
+      "pass": true
+    },
+    "768": {
+      "w": 768,
+      "h": 3200,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 3,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "react": {
+          "profile_gp2": 1,
+          "discover_opps": 1,
+          "blueprint_grid": 3,
+          "forge_g2": 1,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 146,
+          "pct": 0.005940755208333334,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "768x3200"
+        }
+      ],
+      "worst": 0.005940755208333334,
+      "pass": true
+    },
+    "1024": {
+      "w": 1024,
+      "h": 2800,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 2,
+          "discover_opps": 3,
+          "blueprint_grid": 3,
+          "forge_g2": 2,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "react": {
+          "profile_gp2": 2,
+          "discover_opps": 3,
+          "blueprint_grid": 3,
+          "forge_g2": 2,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1024x2800"
+        }
+      ],
+      "worst": 0,
+      "pass": true
+    },
+    "1440": {
+      "w": 1440,
+      "h": 2400,
+      "reflow": {
+        "baseline": {
+          "profile_gp2": 2,
+          "discover_opps": 3,
+          "blueprint_grid": 3,
+          "forge_g2": 2,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "react": {
+          "profile_gp2": 2,
+          "discover_opps": 3,
+          "blueprint_grid": 3,
+          "forge_g2": 2,
+          "dash_tiles": 4,
+          "dash_ustats": 4,
+          "dash_charts": 2
+        },
+        "match": true
+      },
+      "stages": [
+        {
+          "stage": "1-intro",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "2-profile",
+          "nDiff": 85,
+          "pct": 0.002459490740740741,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "3-discover",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "4-blueprint",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "5-forge",
+          "nDiff": 120,
+          "pct": 0.003472222222222222,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "6-sentinel",
+          "nDiff": 28,
+          "pct": 0.0008101851851851852,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "7-grow",
+          "nDiff": 0,
+          "pct": 0,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        },
+        {
+          "stage": "8-dashboard",
+          "nDiff": 15,
+          "pct": 0.00043402777777777775,
+          "dimsMatch": true,
+          "dims": "1440x2400"
+        }
+      ],
+      "worst": 0.003472222222222222,
+      "pass": true
+    }
+  }
+}
