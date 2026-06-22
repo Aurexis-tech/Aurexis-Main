@@ -56,6 +56,24 @@ export function sparkPts(slope){ // rising mini-series, steeper with pace/growth
     let v=t*(.35+slope*.6)+(i%2?.05:-.03); v=Math.max(0,Math.min(1,v));
     out.push((i*42/N).toFixed(1)+","+(16-v*13).toFixed(1)); } return out.join(" "); }
 
+// Blueprint screen data, derived from shared state — mirrors the strings/order
+// the engine's initBlueprint() used verbatim (now the single source of truth for
+// the declarative Blueprint component). No reword, no recompute.
+export function blueprintModel(s){
+  const a=s.answers, o=s.chosen;
+  return {
+    name:o.t,
+    items:[
+      ["Your profile",s.profileLabel,`${a.style} · ${a.time}`],
+      ["The opportunity",o.t,`${a.domain} · ${o.fit}% fit · ~${o.ttr} mo to revenue`],
+      ["Forge will build",o.b.length+" systems",o.b.join(" · ")],
+      ["Sentinel will secure","10-point audit","Hardened toward near hack-proof"],
+      ["You will control","A live dashboard","Pricing, scale & quality — your settings"],
+      ["Studio will grow","AI recommendation","Across ChatGPT, Claude, Gemini & more"],
+    ],
+  };
+}
+
 export function model(){
   const price=+$("#price").value, p=state.pace;
   const evolve=$('[data-tog="evolve"]').classList.contains("on");

@@ -7,6 +7,7 @@ import { RM, $, $$, wait, GC } from './dom.js'
 import { STEPS, state } from './state.js'
 import { QS, NOUN, TRAITS, FOCUS_ADJ, LIB, MKT, FPROD, VERS, CHECKS, OVERSIGHT, GEO, CHN } from './data.js'
 import { traitScores, radarPoint, hashStr, focusMatch, genOpps, pickFollowups, fmtUSD, sparkPts, model } from './logic.js'
+import { notifyScreen } from './bridge.js'
 
 /* ===== background constellation ===== */
 function initBg(){
@@ -316,20 +317,10 @@ function animateRec(from,to){return new Promise(res=>{ if(RM){$("#recNum").textC
     $("#recNum").textContent=v+"%";setArc(v); p<1?requestAnimationFrame(f):res();})(t0);});}
 
 /* ===== 7 blueprint ===== */
-function initBlueprint(){
-  const a=state.answers, o=state.chosen;
-  $("#bpName").textContent=o.t;
-  const items=[
-    ["Your profile",state.profileLabel,`${a.style} · ${a.time}`],
-    ["The opportunity",o.t,`${a.domain} · ${o.fit}% fit · ~${o.ttr} mo to revenue`],
-    ["Forge will build",o.b.length+" systems",o.b.join(" · ")],
-    ["Sentinel will secure","10-point audit","Hardened toward near hack-proof"],
-    ["You will control","A live dashboard","Pricing, scale & quality — your settings"],
-    ["Studio will grow","AI recommendation","Across ChatGPT, Claude, Gemini & more"],
-  ];
-  $("#bpGrid").innerHTML=items.map(it=>`<div class="bp-item"><div class="k">${it[0]}</div><div class="val">${it[1]}</div><div class="vsub">${it[2]}</div></div>`).join("");
-  $("#bpFlow").innerHTML=`Next: <b>Forge</b> builds → <b>Sentinel</b> verifies → <b>you</b> control → <b>Studio</b> grows. Approve the plan to begin.`;
-}
+/* Blueprint is now a declarative React component (screens/Blueprint.jsx) deriving
+   its content from blueprintModel(state). The engine no longer writes #bpName /
+   #bpGrid / #bpFlow — it only signals entry via notifyScreen("blueprint") in the
+   wiring below so React renders the current shared state. */
 
 /* ===== wiring ===== */
 let _booted=false;
@@ -339,7 +330,7 @@ export function boot(){
   renderStepper(); renderQuestions();
   $("#begin").onclick=()=>{ $("#intro").classList.add("gone"); };
   $("#toDiscover").onclick=()=>{computeOpps();go("discover");};
-  $("#toBlueprint").onclick=()=>{initBlueprint();go("blueprint");};
+  $("#toBlueprint").onclick=()=>{notifyScreen("blueprint");go("blueprint");};
   $("#toForge").onclick=()=>{initForge();go("forge");};
   $("#runForge").onclick=runForge;
   $("#toSentinel").onclick=()=>{initSentinel();go("sentinel");};
