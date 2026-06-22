@@ -14,38 +14,41 @@ async function getJson(path) {
 }
 
 function Check({ label, path, hint }) {
-  const [state, setState] = useState({ status: 'idle' })
+  // `phase` is the lifecycle (idle/loading/done/error); `status` is the HTTP code
+  // from the response. They are kept separate so the response's status can't
+  // clobber the lifecycle flag (a successful 200 must still read as "done").
+  const [state, setState] = useState({ phase: 'idle' })
   const run = async () => {
-    setState({ status: 'loading' })
-    try { setState({ status: 'done', ...(await getJson(path)) }) }
-    catch (e) { setState({ status: 'error', error: String(e.message || e) }) }
+    setState({ phase: 'loading' })
+    try { const r = await getJson(path); setState({ phase: 'done', status: r.status, body: r.body }) }
+    catch (e) { setState({ phase: 'error', error: String(e.message || e) }) }
   }
-  const ok = state.status === 'done' && state.body && state.body.ok
-  const color = state.status === 'idle' ? '#888'
-    : state.status === 'loading' ? '#e7b94d'
+  const ok = state.phase === 'done' && state.body && state.body.ok
+  const color = state.phase === 'idle' ? '#888'
+    : state.phase === 'loading' ? '#e7b94d'
     : ok ? '#4cd0b3' : '#f08a8a'
   return (
     <div style={{ border: '1px solid #243', borderRadius: 12, padding: 16, marginBottom: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={run} disabled={state.status === 'loading'}
+        <button onClick={run} disabled={state.phase === 'loading'}
           style={{ font: '600 14px system-ui', padding: '9px 16px', borderRadius: 8, border: 'none',
             cursor: 'pointer', background: '#e7b94d', color: '#1c1404' }}>
-          {state.status === 'loading' ? '…' : label}
+          {state.phase === 'loading' ? '…' : label}
         </button>
         <code style={{ color: '#9aabc0', fontSize: 12 }}>GET {path}</code>
         <span style={{ marginLeft: 'auto', color, fontWeight: 700, fontSize: 13 }}>
-          {state.status === 'idle' ? '—' : state.status === 'loading' ? 'calling…'
+          {state.phase === 'idle' ? '—' : state.phase === 'loading' ? 'calling…'
             : ok ? `ok (HTTP ${state.status})` : `FAIL (HTTP ${state.status ?? '—'})`}
         </span>
       </div>
       <div style={{ color: '#5e7088', fontSize: 12, margin: '8px 0 0' }}>{hint}</div>
-      {state.status === 'done' && (
+      {state.phase === 'done' && (
         <pre style={{ marginTop: 10, padding: 12, background: '#0b1220', borderRadius: 8, color: '#cfe9e2',
           fontSize: 12, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
           {JSON.stringify(state.body, null, 2)}
         </pre>
       )}
-      {state.status === 'error' && (
+      {state.phase === 'error' && (
         <pre style={{ marginTop: 10, color: '#f08a8a', fontSize: 12 }}>
           {state.error}{'\n'}(is `vercel dev` running on :3000 and the Vite proxy active?)
         </pre>
