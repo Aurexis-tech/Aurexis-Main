@@ -1,0 +1,10 @@
+# Fidelity lock: every source here is LF. Force LF on checkout/clone on ALL
+# platforms so the byte-exact sha256 proof holds regardless of core.autocrlf.
+* text=auto eol=lf
+
+# Belt-and-suspenders for the fidelity-critical artifacts: store and emit them
+# verbatim, never line-ending-converted, so their sha256 can never drift.
+reference/Aurexis_Engine_Prototype_8.html -text
+index.html        -text
+src/styles.css    -text
+src/app.js        -text

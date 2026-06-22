@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurexis — Opportunity-to-Reality Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,0,700;9..144,1,500;9..144,1,600&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d18; --ink:#eef3f9; --muted:#9aabc0; --dim:#5e7088;
+  --amber:#e7b94d; --amber2:#f6d27e; --amberd:#b9882f;
+  --teal:#4cd0b3; --teald:#2c9f8a; --violet:#9a8cff; --champ:#f5ecd2;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.06);
+  --glass:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.012));
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Hanken Grotesk','Helvetica Neue',Arial,sans-serif;
+  --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  --r:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#05090f}
+body{font-family:var(--sans);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;position:relative;min-height:100vh;overflow-x:hidden}
+#bgcanvas{position:fixed;inset:0;z-index:-3;width:100%;height:100%;display:block}
+body::before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(48% 38% at 84% 4%,rgba(231,185,77,.16),transparent 60%),
+    radial-gradient(44% 40% at 10% 14%,rgba(76,208,179,.11),transparent 60%),
+    radial-gradient(60% 50% at 60% 112%,rgba(154,140,255,.11),transparent 60%);
+  animation:drift 36s ease-in-out infinite alternate;}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 0%,transparent 55%,rgba(3,6,12,.6));}
+@keyframes drift{from{transform:translate3d(-2%,-1%,0)}to{transform:translate3d(2%,2%,0)}}
+.serif{font-family:var(--serif)}
+.wrap{max-width:1140px;margin:0 auto;padding:26px 22px 90px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}
+.emblem{width:42px;height:42px;flex:none;animation:spin 60s linear infinite}
+.brand .nm{font-family:var(--serif);font-weight:600;font-size:1.4rem;letter-spacing:-.01em;line-height:1}
+.brand .sb{color:var(--muted);font-size:.64rem;letter-spacing:.26em;text-transform:uppercase;font-weight:700;margin-top:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);font-weight:500}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;vertical-align:middle}
+.lg-c i{background:var(--amber);box-shadow:0 0 8px var(--amber)} .lg-v i{background:var(--teal);box-shadow:0 0 8px var(--teal)} .lg-g i{background:var(--champ)}
+
+/* intro */
+#intro{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:30px;background:radial-gradient(120% 100% at 50% 10%,rgba(8,16,28,.6),rgba(5,9,15,.92));backdrop-filter:blur(3px);transition:opacity .7s,visibility .7s}
+#intro.gone{opacity:0;visibility:hidden}
+#intro .big-emblem{width:120px;height:120px;margin-bottom:26px;filter:drop-shadow(0 0 30px rgba(231,185,77,.3))}
+#intro .big-emblem .r{transform-origin:60px 60px;animation:spin 50s linear infinite}
+#intro .kick{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:18px}
+#intro h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.4rem,6vw,4.4rem);letter-spacing:-.03em;line-height:1.02;max-width:14ch;margin-bottom:18px}
+#intro h1 em{font-style:italic;color:var(--champ)}
+#intro p{color:var(--muted);max-width:60ch;font-size:1.08rem;margin-bottom:10px}
+#intro .flowline{color:var(--dim);font-size:.82rem;letter-spacing:.04em;margin-bottom:30px}
+#intro .flowline b{color:var(--muted);font-weight:600}
+.cta{font-family:var(--sans);font-weight:700;font-size:1rem;padding:15px 34px;border-radius:999px;border:none;cursor:pointer;transition:.2s;
+  background:linear-gradient(180deg,var(--amber2),var(--amberd));color:#1c1404;box-shadow:0 12px 34px -10px rgba(231,185,77,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+.cta:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.introchips{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;justify-content:center}
+.introchips span{font-size:.74rem;color:var(--muted);padding:6px 13px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02)}
+
+/* rail */
+.rail{position:relative;margin:24px 0 30px;overflow-x:auto;padding:4px 0 2px}
+.railinner{position:relative;min-width:0}
+.track,.fill{position:absolute;top:14px;height:2px;border-radius:2px}
+.track{left:4%;right:4%;background:rgba(255,255,255,.12)}
+.fill{left:4%;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));box-shadow:0 0 14px rgba(231,185,77,.6);transition:width .55s cubic-bezier(.4,0,.2,1)}
+.nodes{position:relative;display:flex;justify-content:space-between;z-index:2}
+.node{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;min-width:0}
+.bubble{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:.74rem;
+  background:#0c1626;border:1.5px solid rgba(255,255,255,.16);color:var(--muted);transition:.3s;position:relative}
+.node.done .bubble{background:radial-gradient(circle at 35% 30%,#7fe6d0,var(--teald));border-color:transparent;color:#062019;box-shadow:0 0 16px rgba(76,208,179,.5)}
+.node.active .bubble{background:radial-gradient(circle at 35% 30%,var(--amber2),var(--amberd));border-color:transparent;color:#1c1404;box-shadow:0 0 0 6px rgba(231,185,77,.14),0 0 22px rgba(231,185,77,.6)}
+.node.active .bubble::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1.5px solid rgba(231,185,77,.5);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.node .lab{font-size:.62rem;color:var(--muted);text-align:center;line-height:1.18;max-width:84px;overflow-wrap:break-word}
+.node.active .lab{color:var(--ink);font-weight:600}
+.node.clk{cursor:pointer} .node.clk:hover .bubble{border-color:rgba(255,255,255,.4)}
+
+/* screens */
+.screen{display:none}
+.screen.on{display:block;animation:rise .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--amber);font-weight:700}
+.eyebrow::before{content:"";width:14px;height:1.5px;background:var(--amber);display:inline-block}
+h1.scr{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,4.2vw,2.7rem);letter-spacing:-.025em;margin:10px 0 8px;line-height:1.04}
+.lead{color:var(--muted);max-width:780px;margin-bottom:22px;font-size:1.04rem}
+.lead b{color:var(--ink);font-weight:600}
+.panel{position:relative;background:var(--glass);backdrop-filter:blur(16px) saturate(125%);-webkit-backdrop-filter:blur(16px) saturate(125%);
+  border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.07)}
+.gborder::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(150deg,rgba(231,185,77,.7),rgba(255,255,255,.05) 42%,rgba(76,208,179,.45));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;}
+.grid{display:grid;gap:18px}
+@media(min-width:820px){.gp2{grid-template-columns:1.25fr .75fr} .g2{grid-template-columns:1.05fr .95fr} .g3{grid-template-columns:repeat(3,1fr)}}
+
+/* profile + radar */
+.q{margin-bottom:18px}
+.q h4{font-size:.96rem;margin-bottom:10px;font-weight:600;letter-spacing:-.01em}
+.q h4 span{color:var(--dim);font-weight:500;font-size:.82rem}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{padding:9px 15px;border:1px solid var(--line);border-radius:999px;font-size:.86rem;color:var(--muted);cursor:pointer;transition:.18s;background:rgba(255,255,255,.025)}
+.opt:hover{border-color:rgba(255,255,255,.32);color:var(--ink);transform:translateY(-1px)}
+.opt.sel{background:linear-gradient(180deg,var(--amber2),var(--amberd));color:#1c1404;border-color:transparent;font-weight:700;box-shadow:0 6px 18px -6px rgba(231,185,77,.6)}
+#followups{display:none;animation:rise .5s}
+.follow-divider{height:1px;background:var(--line2);margin:6px 0 16px}
+.follow-head{font-size:.86rem;color:var(--muted);margin-bottom:14px;display:flex;gap:8px}
+.follow-head::before{content:"✦";color:var(--amber)}
+.follow-head b{color:var(--champ);font-weight:600}
+.follow-insight{font-size:.82rem;color:var(--teal);margin-top:6px}
+.follow-insight b{color:var(--champ);font-weight:600}
+.sig{position:sticky;top:16px}
+.sig h4{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.02em;margin-bottom:6px;text-transform:uppercase}
+.sig .pl{font-family:var(--serif);font-size:1.5rem;color:var(--champ);font-weight:600;line-height:1.1;min-height:1.6em}
+.sig .pd{color:var(--muted);font-size:.82rem;margin:4px 0 8px}
+.radarwrap{display:flex;justify-content:center;margin-top:4px}
+#radarPoly{transition:all .4s ease}
+.traitlist{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.traitlist span{font-size:.7rem;color:var(--dim)}
+.traitlist b{color:var(--amber);font-weight:700}
+
+/* opportunity */
+.opp{position:relative;border:1px solid var(--line);border-radius:18px;padding:20px;background:var(--glass);backdrop-filter:blur(10px);cursor:pointer;transition:.22s;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.opp:hover{transform:translateY(-4px);border-color:rgba(231,185,77,.45)}
+.opp.sel{border-color:transparent}
+.opp .fit{position:absolute;top:16px;right:16px;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:var(--amber);font-size:1.05rem;border:1px solid rgba(231,185,77,.45);background:radial-gradient(circle,rgba(231,185,77,.16),transparent 70%)}
+.opp h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;margin-bottom:5px;padding-right:58px;letter-spacing:-.01em}
+.opp .tag{color:var(--muted);font-size:.85rem;margin-bottom:12px}
+.opp .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:12px}
+.opp .meta b{color:var(--ink);font-weight:600;display:block;font-size:.82rem}
+.opp .breakdown{margin-bottom:12px}
+.opp .br{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:.72rem;color:var(--dim)}
+.opp .br .t{width:78px;flex:none} .opp .br .bar{flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.opp .br .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--amberd),var(--amber2))}
+.opp .blds{font-size:.73rem;color:var(--dim);line-height:1.5;margin-top:auto}
+.opp .pick{margin-top:13px;font-size:.77rem;font-weight:700;color:var(--amber);letter-spacing:.05em;text-transform:uppercase}
+
+/* forge */
+.vline{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--amber);font-weight:700;margin-bottom:16px;letter-spacing:.04em;padding:6px 12px;border-radius:999px;background:rgba(231,185,77,.08);border:1px solid rgba(231,185,77,.22)}
+.flow{display:flex;flex-direction:column;gap:10px}
+.fp{display:flex;gap:13px;align-items:center;padding:13px 15px;border:1px solid var(--line2);border-radius:14px;background:rgba(255,255,255,.02);opacity:.45;transition:.45s;position:relative;overflow:hidden}
+.fp.act{opacity:1;border-color:rgba(231,185,77,.5)}
+.fp.act::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(231,185,77,.14),transparent);transform:translateX(-100%);animation:scan 1.4s ease-in-out infinite}
+@keyframes scan{to{transform:translateX(100%)}}
+.fp.fin{opacity:1;border-color:rgba(76,208,179,.4)}
+.fp .ic{width:36px;height:36px;border-radius:11px;flex:none;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:.95rem;background:radial-gradient(circle at 35% 30%,rgba(231,185,77,.3),rgba(231,185,77,.08));color:var(--amber);box-shadow:0 0 16px rgba(231,185,77,.18),inset 0 0 0 1px rgba(231,185,77,.3)}
+.fp.fin .ic{background:radial-gradient(circle at 35% 30%,rgba(76,208,179,.32),rgba(76,208,179,.08));color:var(--teal);box-shadow:0 0 16px rgba(76,208,179,.22),inset 0 0 0 1px rgba(76,208,179,.35)}
+.fp .nm{font-weight:600;font-size:.93rem} .fp .ds{font-size:.78rem;color:var(--muted)}
+.fp .st{margin-left:auto;font-size:.7rem;color:var(--dim);white-space:nowrap;font-weight:600} .fp.fin .st{color:var(--teal)}
+.archcard{padding:16px}
+.archcard h5,.ladder h5{font-size:.74rem;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
+#archSvg{width:100%;height:210px;display:block}
+.term{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#060c16;box-shadow:inset 0 0 40px rgba(0,0,0,.5);margin-top:14px}
+.term .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--line2)}
+.term .bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18)}
+.term .bar span{margin-left:8px;font-size:.7rem;color:var(--dim);font-family:ui-monospace,Menlo,Consolas,monospace}
+.log{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;color:var(--muted);padding:13px 15px;height:150px;overflow:auto}
+.log .l{margin-bottom:4px;opacity:0;animation:logIn .25s forwards;line-height:1.5} .log .l .t{color:var(--teal);font-weight:600} .log .l .a{color:var(--amber);font-weight:600}
+@keyframes logIn{to{opacity:1}}
+.bldlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:.73rem;padding:6px 11px;border-radius:999px;border:1px solid var(--line);color:var(--dim);background:rgba(255,255,255,.02);transition:.35s}
+.chip.on{color:#062019;background:linear-gradient(180deg,#7fe6d0,var(--teald));border-color:transparent;font-weight:700;box-shadow:0 4px 14px -4px rgba(76,208,179,.6)}
+.pbar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:14px 0 7px}
+.pbar>span{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--amberd),var(--amber2));box-shadow:0 0 12px rgba(231,185,77,.6);transition:width .5s}
+.pmeta{display:flex;justify-content:space-between;font-size:.74rem;color:var(--dim)}
+.ladder{margin-top:16px}
+.vsteps{display:flex;gap:6px}
+.vstep{flex:1;text-align:center;padding:9px 4px;border:1px solid var(--line2);border-radius:9px;background:rgba(255,255,255,.015);transition:.3s}
+.vstep .v{font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--dim)}
+.vstep .d{font-size:.6rem;color:var(--dim);line-height:1.2;margin-top:3px}
+.vstep.done{border-color:rgba(76,208,179,.3)} .vstep.done .v{color:var(--teal)}
+.vstep.cur{border-color:transparent;background:linear-gradient(180deg,rgba(231,185,77,.18),rgba(231,185,77,.05));box-shadow:0 0 0 1px rgba(231,185,77,.5) inset}
+.vstep.cur .v{color:var(--amber)} .vstep.cur .d{color:var(--muted)}
+
+/* sentinel */
+.check{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line2);border-radius:11px;margin-bottom:9px;background:rgba(255,255,255,.018);transition:.35s;opacity:.5}
+.check.ok{opacity:1;border-color:rgba(76,208,179,.32);background:rgba(76,208,179,.04)}
+.check .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--dim);flex:none;display:grid;place-items:center;color:transparent;transition:.3s;font-size:.72rem;font-weight:700}
+.check.ok .box{background:linear-gradient(180deg,#7fe6d0,var(--teald));border-color:transparent;color:#062019;box-shadow:0 0 12px rgba(76,208,179,.4)}
+.check .cn{font-size:.85rem;font-weight:500} .check .cd{font-size:.73rem;color:var(--dim)}
+.dialwrap{position:relative;width:200px;height:200px;margin:6px auto 2px}
+.dialwrap svg{transform:rotate(-90deg)}
+.dialcen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dialcen .num{font-family:var(--serif);font-size:3rem;font-weight:700;color:var(--teal);line-height:1;text-shadow:0 0 22px rgba(76,208,179,.4)}
+.dialcen .lab{font-size:.74rem;color:var(--muted);margin-top:4px}
+.scan-note{text-align:center;font-size:.74rem;color:var(--dim);margin-top:8px}
+.seal{text-align:center;padding:20px;border-radius:16px;background:radial-gradient(circle at 50% 0%,rgba(76,208,179,.12),transparent 70%);display:none;margin-top:14px}
+.seal.show{display:block;animation:rise .55s}
+.seal .ring{width:72px;height:72px;margin:0 auto 10px;animation:spin 24s linear infinite}
+.seal .st{font-family:var(--serif);font-size:1.3rem;color:var(--teal);font-weight:600}
+
+/* dashboard */
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{border:1px solid var(--line2);border-radius:14px;padding:15px;background:rgba(255,255,255,.025);position:relative;overflow:hidden}
+.tile .v{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--champ);line-height:1.1}
+.tile .k{font-size:.71rem;color:var(--muted);margin-top:3px}
+.tile .spark{position:absolute;right:9px;bottom:9px;width:42px;height:18px;opacity:.6}
+.chartcard{margin-top:14px;padding:16px}
+.chartcard h5{font-size:.74rem;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+#revChart{width:100%;height:140px;display:block}
+.ctrl{margin-top:14px;padding:16px;border:1px solid var(--line2);border-radius:14px;background:rgba(255,255,255,.018)}
+.ctrl .row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid var(--line2)}
+.ctrl .row:last-child{border-bottom:none;padding-bottom:0} .ctrl .row:first-child{padding-top:0}
+.ctrl .lbl{font-size:.85rem;font-weight:600} .ctrl .sub{font-size:.73rem;color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:rgba(255,255,255,.12);outline:none;flex:1;min-width:150px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 35% 30%,var(--amber2),var(--amberd));box-shadow:0 0 12px rgba(231,185,77,.7)}
+.toggle{width:48px;height:26px;border-radius:99px;background:rgba(255,255,255,.13);position:relative;cursor:pointer;transition:.2s;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#cdd7e3;transition:.2s}
+.toggle.on{background:linear-gradient(180deg,#7fe6d0,var(--teald))} .toggle.on::after{left:25px;background:#062019}
+.seg{display:flex;gap:6px}
+.seg button{font-family:var(--sans);font-size:.78rem;font-weight:600;color:var(--muted);background:rgba(255,255,255,.03);border:1px solid var(--line2);border-radius:8px;padding:7px 12px;cursor:pointer;transition:.18s}
+.seg button.on{background:linear-gradient(180deg,var(--amber2),var(--amberd));color:#1c1404;border-color:transparent}
+.muted-note{font-size:.75rem;color:var(--dim);margin-top:12px}
+.recap{display:flex;align-items:center;gap:10px;font-size:.86rem;color:var(--muted);background:rgba(76,208,179,.07);border:1px solid rgba(76,208,179,.28);border-radius:12px;padding:12px 15px;margin-bottom:16px}
+.recap b{color:var(--champ);font-weight:600}
+/* dashboard — advanced */
+.tile .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.tile.big .v{font-size:1.7rem}
+.tile .sub2{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:.64rem;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.02em;white-space:nowrap}
+.delta.up{color:#8aeeda;background:rgba(76,208,179,.13)} .delta.down{color:#f4a3a3;background:rgba(240,138,138,.13)}
+.c-teal{color:var(--teal)!important}.c-amber{color:var(--amber)!important}.c-rose{color:#f08a8a!important}
+.scenario{margin-top:14px;padding:13px 16px;border:1px solid rgba(76,208,179,.26);border-radius:13px;background:rgba(76,208,179,.055);font-size:.9rem;color:var(--muted);line-height:1.55}
+.scenario b{color:var(--champ);font-weight:600}
+.dashcharts{margin-top:14px}
+@media(min-width:760px){.dashcharts{grid-template-columns:1fr 1fr}}
+.cc-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+.cc-end{font-family:var(--serif);font-weight:700;font-size:.92rem;color:var(--champ);white-space:nowrap}
+#usersChart{width:100%;height:140px;display:block}
+.ustatsWrap{margin-top:14px;padding:16px}
+.ust-h{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:13px}
+.ust-h::before{content:"";width:14px;height:1.5px;background:var(--teal);display:inline-block}
+.ustats{display:grid;gap:11px;grid-template-columns:repeat(2,1fr)}
+@media(min-width:560px){.ustats{grid-template-columns:repeat(4,1fr)}}
+.ustat{border:1px solid var(--line2);border-radius:12px;padding:12px 13px;background:rgba(255,255,255,.018);transition:.3s}
+.ustat .uv{font-family:var(--serif);font-weight:700;font-size:1.16rem;color:var(--ink);line-height:1.12}
+.ustat .uk{font-size:.67rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
+
+/* grow */
+.geo{display:flex;flex-direction:column;gap:9px}
+.gp{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;opacity:.45;transition:.45s;background:rgba(255,255,255,.018)}
+.gp.act{opacity:1;border-color:rgba(245,236,210,.4);background:rgba(245,236,210,.05)}
+.gp .gi{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:.84rem;background:radial-gradient(circle at 35% 30%,rgba(245,236,210,.28),rgba(245,236,210,.06));color:var(--champ);box-shadow:inset 0 0 0 1px rgba(245,236,210,.25)}
+.gp .gn{font-weight:600;font-size:.88rem} .gp .gd{font-size:.75rem;color:var(--muted)}
+.gaugewrap{position:relative;width:210px;height:210px;margin:0 auto}
+.gaugewrap svg{transform:rotate(-90deg)}
+.gaugecen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gaugecen .num{font-family:var(--serif);font-size:3.2rem;font-weight:700;color:var(--amber);line-height:1;text-shadow:0 0 22px rgba(231,185,77,.4)}
+.gaugecen .lab{font-size:.76rem;color:var(--muted);margin-top:5px;max-width:130px;text-align:center}
+.channels{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;justify-content:center}
+.chn{font-size:.74rem;color:var(--dim);padding:6px 12px;border-radius:999px;border:1px solid var(--line2);transition:.3s}
+.chn.on{color:var(--ink);border-color:rgba(76,208,179,.4);background:rgba(76,208,179,.08)}
+.chn.on::before{content:"●";color:var(--teal);margin-right:6px;font-size:.6rem}
+.askwrap{margin-top:18px}
+.askcard{border:1px solid var(--line2);border-radius:14px;padding:16px;background:rgba(255,255,255,.018)}
+.askcard.after{display:none}
+.askcard.after.show{display:block;animation:rise .55s}
+.askcard .who{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.askcard.before .who{color:var(--dim)} .askcard.after .who{color:var(--teal)}
+.bubble-q{font-size:.85rem;color:var(--ink);background:rgba(255,255,255,.04);border-radius:12px 12px 12px 4px;padding:10px 13px;margin-bottom:9px;max-width:90%}
+.bubble-a{font-size:.85rem;color:var(--muted);background:rgba(231,185,77,.06);border-radius:12px 12px 4px 12px;padding:10px 13px;margin-left:auto;max-width:92%}
+.askcard.after .bubble-a{background:rgba(76,208,179,.08);color:var(--ink)}
+.askcard.after .bubble-a b{color:var(--champ)}
+.finalseal{text-align:center;padding:24px 22px;border-radius:18px;margin-top:18px;background:radial-gradient(circle at 50% 0%,rgba(231,185,77,.12),transparent 70%);display:none}
+.finalseal.show{display:block;animation:rise .55s}
+.finalseal .big{font-family:var(--serif);font-size:1.5rem;color:var(--champ);font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.finalseal .sub{color:var(--muted);font-size:.9rem;max-width:760px;margin:0 auto}
+
+/* blueprint */
+.bpwrap{text-align:center}
+.bp-emblem{width:80px;height:80px;margin:0 auto 14px;animation:spin 40s linear infinite;filter:drop-shadow(0 0 22px rgba(231,185,77,.3))}
+.bp-title{font-family:var(--serif);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.bp-sub{color:var(--muted);max-width:62ch;margin:0 auto 22px}
+.bp-grid{display:grid;gap:14px;grid-template-columns:repeat(2,1fr);text-align:left}
+@media(min-width:720px){.bp-grid{grid-template-columns:repeat(3,1fr)}}
+.bp-item{border:1px solid var(--line2);border-radius:14px;padding:16px;background:rgba(255,255,255,.022)}
+.bp-item .k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:6px}
+.bp-item .val{font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-weight:600;line-height:1.25}
+.bp-item .vsub{font-size:.76rem;color:var(--muted);margin-top:3px}
+.bp-flow{margin-top:18px;font-size:.82rem;color:var(--dim);letter-spacing:.02em}
+.bp-flow b{color:var(--champ);font-family:var(--serif);font-weight:600}
+
+/* nav */
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-weight:700;font-size:.9rem;padding:13px 24px;border-radius:999px;border:none;cursor:pointer;transition:.18s;letter-spacing:.01em}
+.btn.primary{background:linear-gradient(180deg,var(--amber2),var(--amberd));color:#1c1404;box-shadow:0 8px 24px -8px rgba(231,185,77,.65),inset 0 1px 0 rgba(255,255,255,.45)}
+.btn.primary:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn.primary:disabled{opacity:.38;cursor:not-allowed;filter:none;transform:none;box-shadow:none}
+.btn.ghost{background:rgba(255,255,255,.03);color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{border-color:rgba(255,255,255,.32)}
+.btn.run{background:linear-gradient(180deg,#7fe6d0,var(--teald));color:#062019;box-shadow:0 8px 24px -8px rgba(76,208,179,.65),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn.run:hover{transform:translateY(-2px);filter:brightness(1.05)} .btn.run:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none;box-shadow:none}
+.kicker{font-size:.74rem;color:var(--dim);text-align:center;margin-top:30px}
+.kbd{font-size:.7rem;color:var(--dim);text-align:center;margin-top:8px}
+.kbd b{color:var(--muted);font-family:ui-monospace,monospace;background:rgba(255,255,255,.05);padding:1px 6px;border-radius:5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+
+/* ultimate polish */
+.opp.enter{opacity:0;transform:translateY(16px)}
+.opp.enter.show{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.2,.7,.2,1),transform .55s cubic-bezier(.2,.7,.2,1)}
+.archflow{opacity:0;transition:opacity .4s}
+.archflow.on{opacity:.95;animation:flowdash .9s linear infinite}
+@keyframes flowdash{to{stroke-dashoffset:-20}}
+.follow-analysing{font-size:.92rem;font-weight:600;padding:6px 0 4px;background:linear-gradient(90deg,var(--muted),var(--champ),var(--muted));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.follow-analysing .dots::after{content:"";animation:dots 1.2s steps(1) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}100%{content:""}}
+#intro h1 em{background:linear-gradient(90deg,#f5ecd2,#f6d27e,#e7b94d,#f5ecd2);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+#intro .big-emblem{animation:emblemGlow 3s ease-in-out infinite}
+@keyframes emblemGlow{0%,100%{filter:drop-shadow(0 0 24px rgba(231,185,77,.25))}50%{filter:drop-shadow(0 0 40px rgba(231,185,77,.5))}}
+</style>
+</head>
+<body>
+<canvas id="bgcanvas"></canvas>
+
+<!-- INTRO -->
+<div id="intro">
+  <svg class="big-emblem" viewBox="0 0 120 120" fill="none">
+    <g class="r">
+      <circle cx="60" cy="60" r="54" stroke="rgba(231,185,77,.22)" stroke-width="1"/>
+      <circle cx="60" cy="60" r="40" stroke="rgba(231,185,77,.45)" stroke-width="1.2" stroke-dasharray="3 6"/>
+      <circle cx="60" cy="60" r="26" stroke="rgba(76,208,179,.6)" stroke-width="1.4"/>
+      <circle cx="114" cy="60" r="2.4" fill="#e7b94d"/>
+      <circle cx="60" cy="20" r="1.8" fill="#4cd0b3"/>
+    </g>
+    <circle cx="60" cy="60" r="6" fill="#e7b94d"/>
+  </svg>
+  <div class="kick">Aurexis · Opportunity-to-Reality Engine</div>
+  <h1>Turn who you are into <em>what's real.</em></h1>
+  <p>Aurexis reads your personality, finds the opportunity that fits you, builds it, secures it, hands you the controls, and takes it to market — one continuous engine.</p>
+  <div class="flowline"><b>Profile → Opportunity → Forge → Sentinel → Dashboard → Studio</b></div>
+  <button class="cta" id="begin">Begin the engine →</button>
+  <div class="introchips"><span>Forge · create</span><span>Sentinel · verify</span><span>Studio · grow</span></div>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <svg class="emblem" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="19" stroke="rgba(231,185,77,.25)" stroke-width="1"/>
+        <circle cx="21" cy="21" r="13" stroke="rgba(231,185,77,.5)" stroke-width="1.2"/>
+        <circle cx="21" cy="21" r="7.5" stroke="rgba(76,208,179,.7)" stroke-width="1.2"/>
+        <circle cx="21" cy="21" r="2.8" fill="#e7b94d"/><circle cx="40" cy="21" r="1.6" fill="#4cd0b3"/>
+      </svg>
+      <div><div class="nm">Aurexis</div><div class="sb">Opportunity-to-Reality Engine</div></div>
+    </div>
+    <div class="legend"><span class="lg-c"><i></i>Forge · create</span><span class="lg-v"><i></i>Sentinel · verify</span><span class="lg-g"><i></i>Studio · grow</span></div>
+  </div>
+
+  <div class="rail"><div class="railinner"><div class="track"></div><div class="fill" id="railfill"></div><div class="nodes" id="nodes"></div></div></div>
+
+  <!-- 1 PROFILE -->
+  <section class="screen on" data-s="profile">
+    <div class="eyebrow">Step 1 · It starts with you</div>
+    <h1 class="scr">Aurexis reads who you are first</h1>
+    <p class="lead">Before a single line is built, Aurexis profiles your <b>personality and decision-making style</b>, then finds opportunities matched to <b>you</b> — beginning in business, later expanding to finance, education, and beyond.</p>
+    <div class="grid gp2">
+      <div class="panel gborder"><div id="questions"></div><div id="followups"></div></div>
+      <div class="panel">
+        <div class="sig">
+          <h4>Your profile signature</h4>
+          <div class="pl" id="profileLabel">Answer to begin…</div>
+          <div class="pd" id="profileDesc">Aurexis synthesises a live signature as you choose.</div>
+          <div class="radarwrap">
+            <svg viewBox="0 0 180 180" width="200" height="200" id="radar">
+              <g id="radarGrid"></g>
+              <polygon id="radarPoly" points="90,90 90,90 90,90 90,90 90,90" fill="rgba(231,185,77,.18)" stroke="#e7b94d" stroke-width="1.6"/>
+              <g id="radarLabels"></g>
+            </svg>
+          </div>
+          <div class="traitlist" id="traitlist"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="btn primary adv" id="toDiscover" disabled>Find my opportunities →</button></div>
+  </section>
+
+  <!-- 2 DISCOVER -->
+  <section class="screen" data-s="discover">
+    <div class="eyebrow">Step 2 · Matched to your profile</div>
+    <h1 class="scr">Opportunities found for you</h1>
+    <p class="lead">Aurexis ranks and simulates options against your profile and live market signal. Pick the one to bring to reality — Forge takes it from here.</p>
+    <div class="grid g3" id="opps"></div>
+    <div class="nav"><button class="btn ghost" data-back="profile">← Back</button><button class="btn primary adv" id="toBlueprint" disabled>Review the blueprint →</button></div>
+  </section>
+
+  <!-- 3 FORGE -->
+  <section class="screen" data-s="forge">
+    <div class="eyebrow">Step 3 · Forge · create</div>
+    <h1 class="scr">Forge builds <span id="fName" class="serif" style="color:var(--champ)"></span></h1>
+    <p class="lead">Five products carry one run end to end — agents, software, automations, workflows, infrastructure — assembling a working system.</p>
+    <div class="vline" id="fVer">◆ Forge V4 · create &amp; run</div>
+    <div class="grid g2">
+      <div>
+        <div class="flow" id="forgeFlow"></div>
+        <div class="bldlist" id="bldlist"></div>
+      </div>
+      <div>
+        <div class="panel archcard"><h5>System being assembled</h5><svg id="archSvg" viewBox="0 0 320 210"></svg></div>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span>forge · build.log — Sentinel watching</span></div><div class="log" id="forgeLog"></div></div>
+        <div class="pbar"><span id="forgeBar"></span></div>
+        <div class="pmeta"><span>discover → rank → design → build → operate</span><span id="forgePct">0%</span></div>
+      </div>
+    </div>
+    <div class="panel ladder"><h5>Forge capability ladder</h5><div class="vsteps" id="vsteps"></div></div>
+    <div class="nav"><button class="btn ghost" data-back="blueprint">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runForge">▸ Run Forge</button><button class="btn primary adv" id="toSentinel" disabled>Verify with Sentinel →</button></span></div>
+  </section>
+
+  <!-- 4 SENTINEL -->
+  <section class="screen" data-s="sentinel">
+    <div class="eyebrow">Step 4 · Sentinel · trust</div>
+    <h1 class="scr">Sentinel oversees &amp; verifies</h1>
+    <p class="lead">Sentinel runs <b>during</b> the build — confirming every step and keeping you updated — and <b>after</b>, hardening the product toward near hack-proof, then certifying it.</p>
+    <div class="grid g2">
+      <div class="panel" style="padding:20px"><div style="font-size:.82rem;color:var(--muted);margin-bottom:13px;font-weight:600;letter-spacing:.02em">SECURITY AUDIT</div><div id="checks"></div></div>
+      <div class="panel">
+        <div class="dialwrap">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="13"/>
+            <circle id="secArc" cx="100" cy="100" r="84" fill="none" stroke="url(#sg)" stroke-width="13" stroke-linecap="round" stroke-dasharray="527.79" stroke-dashoffset="527.79" style="transition:stroke-dashoffset .25s linear;filter:drop-shadow(0 0 8px rgba(76,208,179,.5))"/>
+            <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fe6d0"/><stop offset="1" stop-color="#2c9f8a"/></linearGradient></defs>
+          </svg>
+          <div class="dialcen"><div class="num" id="secNum">0</div><div class="lab">Security score · /100</div></div>
+        </div>
+        <div class="scan-note" id="scanNote">Awaiting scan…</div>
+        <div class="term" style="margin-top:14px"><div class="bar"><i></i><i></i><i></i><span>sentinel · oversight</span></div><div class="log" id="sentLog" style="height:120px"></div></div>
+        <div class="seal" id="seal">
+          <svg class="ring" viewBox="0 0 72 72" fill="none">
+            <circle cx="36" cy="36" r="33" stroke="rgba(76,208,179,.25)" stroke-width="1.4"/>
+            <circle cx="36" cy="36" r="26" stroke="rgba(76,208,179,.5)" stroke-width="1.4" stroke-dasharray="5 6"/>
+            <circle cx="36" cy="36" r="18" fill="rgba(76,208,179,.1)" stroke="var(--teal)" stroke-width="2"/>
+            <path d="M28 36 l5 5 l11 -12" stroke="var(--teal)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="st">Sentinel Verified</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:5px"><span id="sealName"></span> passed a 10-point audit.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="forge">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runSentinel">▸ Run Sentinel</button><button class="btn primary adv" id="toStudio" disabled>Take it to market →</button></span></div>
+  </section>
+
+  <!-- 5 DASHBOARD -->
+  <section class="screen" data-s="dashboard">
+    <div class="eyebrow">Step 5 · Your control</div>
+    <h1 class="scr">Your dashboard — your choices</h1>
+    <p class="lead">A real control surface for <b id="dName"></b>. Steer the product on your own terms — Aurexis does the work, you stay in command.</p>
+    <div class="recap" id="dashRecap"></div>
+    <div class="panel gborder">
+      <div class="tiles" id="tiles"></div>
+      <div id="scenarioLine" class="scenario"></div>
+      <div class="grid g2 dashcharts">
+        <div class="panel chartcard"><div class="cc-head"><h5>Projected revenue · 12 months</h5><span class="cc-end" id="revEnd"></span></div><svg id="revChart" viewBox="0 0 600 140" preserveAspectRatio="none"></svg></div>
+        <div class="panel chartcard"><div class="cc-head"><h5>Active users · 12 months</h5><span class="cc-end" id="usrEnd"></span></div><svg id="usersChart" viewBox="0 0 600 140" preserveAspectRatio="none"></svg></div>
+      </div>
+      <div class="panel ustatsWrap"><div class="ust-h">Unit economics · live</div><div class="ustats" id="ustats"></div></div>
+      <div class="ctrl">
+        <div class="row"><div><div class="lbl">Price per month</div><div class="sub">Drag to model revenue</div></div>
+          <input type="range" id="price" min="9" max="199" value="49" step="10">
+          <div class="serif" style="color:var(--champ);font-weight:700;min-width:62px;text-align:right" id="priceV">$49</div></div>
+        <div class="row"><div><div class="lbl">Growth pace</div><div class="sub">Operator scales infra to match</div></div>
+          <div class="seg" id="paceSeg"><button data-p="1">Calm</button><button data-p="1.5" class="on">Steady</button><button data-p="2.2">Aggressive</button></div></div>
+        <div class="row"><div><div class="lbl">Evolver — auto-improve</div><div class="sub">Daily observe→improve→deploy</div></div><div class="toggle on" data-tog="evolve"></div></div>
+        <div class="row"><div><div class="lbl">Operator — auto-scale</div><div class="sub">Reliability & uptime</div></div><div class="toggle on" data-tog="scale"></div></div>
+      </div>
+      <div class="muted-note">Everything recalculates live from your settings — your business, your call.</div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="grow">← Back</button><button class="btn primary" id="restart">↺ Run the loop again</button></div>
+  </section>
+
+  <!-- 6 GROW -->
+  <section class="screen" data-s="grow">
+    <div class="eyebrow">Step 6 · Studio · grow (SEO / GEO agency)</div>
+    <h1 class="scr">Studio makes AI recommend it</h1>
+    <p class="lead">The product is real, verified, and yours. Now Studio expands its reach — five products that get it recommended by AI, not just ranked on Google.</p>
+    <div class="grid g2">
+      <div class="geo" id="geo"></div>
+      <div class="panel" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="gaugewrap">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14"/>
+            <circle id="gaugeArc" cx="100" cy="100" r="84" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="527.79" stroke-dashoffset="527.79" style="transition:stroke-dashoffset .1s linear;filter:drop-shadow(0 0 8px rgba(231,185,77,.5))"/>
+            <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5ecd2"/><stop offset="1" stop-color="#e7b94d"/></linearGradient></defs>
+          </svg>
+          <div class="gaugecen"><div class="num" id="recNum">12%</div><div class="lab">AI recommendation rate</div></div>
+        </div>
+        <div class="channels" id="channels"></div>
+      </div>
+    </div>
+    <div class="askwrap grid g2">
+      <div class="askcard before"><div class="who">Before · what AI says</div><div class="bubble-q" id="askQ1">"Best tool for this?"</div><div class="bubble-a" id="askA1">It lists incumbents — you're not mentioned.</div></div>
+      <div class="askcard after" id="askAfter"><div class="who">After Studio · what AI says</div><div class="bubble-q" id="askQ2">"Best tool for this?"</div><div class="bubble-a" id="askA2"></div></div>
+    </div>
+    <div class="finalseal" id="finalSeal"><div class="big">From your personality → a living, verified venture in market.</div>
+      <div class="sub"><span id="finalName"></span> — discovered for you, built by Forge, secured by Sentinel, controlled by you, grown by Studio.</div></div>
+    <div class="nav"><button class="btn ghost" data-back="sentinel">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runGeo">▸ Run Studio (GEO)</button><button class="btn primary adv" id="toDashboard" disabled>Open my dashboard →</button></span></div>
+  </section>
+
+  <!-- 3 BLUEPRINT (the plan) -->
+  <section class="screen" data-s="blueprint">
+    <div class="eyebrow">Step 3 · The plan</div>
+    <h1 class="scr">The blueprint for <span id="bpName" class="serif" style="color:var(--champ)"></span></h1>
+    <p class="lead">Before building, Aurexis — via the Architect — maps exactly what it will <b>create, secure, and grow</b>. Approve the plan, then watch it become real.</p>
+    <div class="panel gborder bpwrap">
+      <div class="bp-grid" id="bpGrid"></div>
+      <div class="bp-flow" id="bpFlow"></div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="discover">← Back</button><button class="btn primary adv" id="toForge">Build it with Forge →</button></div>
+  </section>
+
+  <div class="kicker">High-level interactive prototype · Aurexis Opportunity-to-Reality Engine · figures are illustrative</div>
+  <div class="kbd">Tip: use <b>←</b> / <b>→</b> to move between steps</div>
+</div>
+
+<script>
+"use strict";
+const RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=s=>document.querySelector(s), $$=s=>Array.prototype.slice.call(document.querySelectorAll(s));
+const wait=ms=>new Promise(r=>setTimeout(r,RM?0:ms));
+const GC=527.79;
+
+/* ===== background constellation ===== */
+(function(){
+  const cv=$("#bgcanvas"), ctx=cv.getContext("2d"); let pts=[], w=0, h=0, dpr=Math.min(2,window.devicePixelRatio||1), raf;
+  function resize(){ w=cv.clientWidth; h=cv.clientHeight; cv.width=w*dpr; cv.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    const n=Math.min(80,Math.round(w*h/16000)); pts=[]; for(let i=0;i<n;i++) pts.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.6+.5}); }
+  function frame(){ ctx.clearRect(0,0,w,h);
+    for(const p of pts){ p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; }
+    for(let i=0;i<pts.length;i++){ for(let j=i+1;j<pts.length;j++){ const a=pts[i],b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=dx*dx+dy*dy;
+      if(d<13000){ const o=(1-d/13000)*.16; ctx.strokeStyle="rgba(231,185,77,"+o+")"; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } } }
+    for(const p of pts){ ctx.fillStyle="rgba(245,236,210,.5)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill(); }
+    raf=requestAnimationFrame(frame); }
+  resize(); window.addEventListener("resize",()=>{cancelAnimationFrame(raf);resize();if(!RM)frame();else staticFrame();});
+  function staticFrame(){ frame(); cancelAnimationFrame(raf); }
+  if(RM){ frame(); cancelAnimationFrame(raf); } else frame();
+})();
+
+/* ===== steps / nav ===== */
+const STEPS=[["profile","Profile you"],["discover","Opportunities"],["blueprint","Blueprint"],["forge","Forge builds"],["sentinel","Sentinel verifies"],["grow","Studio grows"],["dashboard","Your dashboard"]];
+const state={answers:{},reached:{profile:true},screen:"profile",opps:[],chosen:null,users:240,mrr:0,pace:1.5,follow:{},followQs:[],focuses:[],followShown:false,radarVals:[0,0,0,0,0]};
+
+/* ===== ultimate polish helpers ===== */
+let _radarRAF=0,_typeTok=0;
+function animateRadar(tv){
+  const poly=document.querySelector("#radarPoly"); if(!poly) return;
+  if(!state.radarVals) state.radarVals=[0,0,0,0,0];
+  const from=state.radarVals.slice();
+  if(RM){ state.radarVals=tv.slice(); poly.setAttribute("points",tv.map((v,i)=>radarPoint(i,v).join(",")).join(" ")); return; }
+  cancelAnimationFrame(_radarRAF); const t0=performance.now(),dur=420;
+  (function f(t){ const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    const cur=tv.map((v,i)=>from[i]+(v-from[i])*e);
+    poly.setAttribute("points",cur.map((v,i)=>radarPoint(i,v).join(",")).join(" "));
+    if(p<1){ _radarRAF=requestAnimationFrame(f);} else state.radarVals=tv.slice(); })(t0);
+}
+function typeText(el,txt,onDone){
+  if(!el) return; const tok=++_typeTok;
+  if(RM){ el.textContent=txt; if(onDone) onDone(); return; }
+  el.textContent=""; let i=0;
+  (function step(){ if(tok!==_typeTok) return; el.textContent=txt.slice(0,i++);
+    if(i<=txt.length){ setTimeout(step,16);} else if(onDone) onDone(); })();
+}
+function countUp(el,to){ if(!el) return; if(RM){ el.textContent=to+"%"; return; }
+  const t0=performance.now(),dur=700; (function f(t){ const p=Math.min(1,(t-t0)/dur);
+    el.textContent=Math.round(to*(1-Math.pow(1-p,3)))+"%"; if(p<1) requestAnimationFrame(f); else el.textContent=to+"%"; })(t0); }
+function enterCards(){ if(RM) return; const cards=Array.prototype.slice.call(document.querySelectorAll("#opps .opp"));
+  cards.forEach((c,i)=>{ c.classList.add("enter"); const d=60+i*90;
+    setTimeout(()=>c.classList.add("show"),d); setTimeout(()=>{c.classList.remove("enter");c.classList.remove("show");},d+650); }); }
+function attachTilt(){ if(RM) return; Array.prototype.slice.call(document.querySelectorAll("#opps .opp")).forEach(c=>{
+  c.addEventListener("mousemove",e=>{ const r=c.getBoundingClientRect(); const dx=(e.clientX-r.left)/r.width-.5,dy=(e.clientY-r.top)/r.height-.5;
+    c.style.transform="perspective(700px) rotateX("+(-dy*6)+"deg) rotateY("+(dx*6)+"deg) translateY(-4px)"; });
+  c.addEventListener("mouseleave",()=>{ c.style.transform=""; }); }); }
+function fireBurst(){ if(RM) return; const cv=document.createElement("canvas");
+  cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:35"; document.body.appendChild(cv);
+  const ctx=cv.getContext("2d"),dpr=Math.min(2,window.devicePixelRatio||1); cv.width=window.innerWidth*dpr; cv.height=window.innerHeight*dpr; ctx.scale(dpr,dpr);
+  const cx=window.innerWidth/2,cy=window.innerHeight*0.42,cols=["#e7b94d","#f6d27e","#4cd0b3","#f5ecd2"],ps=[];
+  for(let i=0;i<120;i++){ const a=Math.random()*6.283,sp=2+Math.random()*7.5; ps.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,r:2+Math.random()*3,c:cols[i%cols.length],life:1}); }
+  const t0=performance.now(); (function f(){ ctx.clearRect(0,0,cv.width,cv.height); let alive=false;
+    ps.forEach(p=>{ p.vy+=0.12; p.x+=p.vx; p.y+=p.vy; p.life-=0.012; if(p.life>0){ alive=true;
+      ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill(); } });
+    if(alive && performance.now()-t0<2200){ requestAnimationFrame(f);} else cv.remove(); })();
+}
+function showFollow(a){
+  if(!state.followShown && !RM){ state.followShown=true; const w=document.querySelector("#followups"); w.style.display="block";
+    w.innerHTML='<div class="follow-divider"></div><div class="follow-analysing">Aurexis is reading your answers<span class="dots"></span></div>';
+    setTimeout(()=>renderFollow(a),900);
+  } else { state.followShown=true; renderFollow(a); } }
+const idx=id=>STEPS.findIndex(s=>s[0]===id);
+function renderStepper(){
+  const cur=idx(state.screen);
+  $("#nodes").innerHTML=STEPS.map((s,i)=>{const id=s[0],done=i<cur,active=i===cur,clk=state.reached[id];
+    return `<div class="node ${active?'active':''} ${done?'done':''} ${clk?'clk':''}" data-go="${id}"><div class="bubble">${done?'✓':i+1}</div><div class="lab">${s[1]}</div></div>`;}).join("");
+  $("#railfill").style.width=(90*cur/(STEPS.length-1))+"%";
+  $$('#nodes .node.clk').forEach(el=>el.onclick=()=>go(el.dataset.go));
+}
+function go(id){ state.screen=id; state.reached[id]=true;
+  $$(".screen").forEach(s=>s.classList.toggle("on",s.dataset.s===id));
+  renderStepper(); window.scrollTo({top:0,behavior:RM?'auto':'smooth'}); }
+
+/* ===== 1 profile + radar ===== */
+const QS=[
+ {k:"energy",q:"What energizes you most?",sub:"",o:["Building things","Selling & growth","Systems & optimisation","Big-picture strategy","Solving hard problems","Creative & design"]},
+ {k:"risk",q:"Your risk appetite?",sub:"",o:["Cautious","Steady","Balanced","Bold","All-in"]},
+ {k:"domain",q:"Where do you want to start?",sub:"(business first)",o:["SaaS tools","AI & dev tools","AI agents & automation","Generative AI apps","LLM infra & MLOps","Computer vision","Voice & speech AI","Data & analytics","AI search & RAG","Cybersecurity","Fintech & payments","Healthtech","HR & recruiting","Marketing tech","Sales & CRM","Customer support","Legaltech","Proptech","Insurtech","Logistics & supply chain","Climate & energy","Robotics & hardware","IoT & devices","Web3 & blockchain","Gaming & interactive","Productivity & collaboration","No-code / low-code","Vertical SaaS","Media & content","E-commerce & DTC","Marketplaces","Creator economy","Education & courses","Local services"]},
+ {k:"style",q:"How do you decide?",sub:"",o:["Fast & iterative","Data-first","Intuition-led","Customer-led","Methodical"]},
+ {k:"time",q:"Time you can give?",sub:"",o:["Weekends only","Side hustle","Part-time","Full-time","Full-time + team"]},
+];
+const NOUN={"Building things":"Builder","Selling & growth":"Grower","Systems & optimisation":"Operator","Big-picture strategy":"Visionary","Solving hard problems":"Problem-Solver","Creative & design":"Maker"};
+const TRAITS=["Build","Grow","System","Vision","Create"];
+
+/* ---- procedural opportunity generator (domains without a bespoke set) ---- */
+const DKIT={
+ "AI agents & automation":["Agent","multi-step work for teams"],"Generative AI apps":["Content","on-brand content & assets"],
+ "LLM infra & MLOps":["Model","shipping & monitoring models"],"Computer vision":["Vision","image & video understanding"],
+ "Voice & speech AI":["Voice","calls & voice workflows"],"Data & analytics":["Data","turning data into decisions"],
+ "AI search & RAG":["Search","answers from your own knowledge"],"Cybersecurity":["Threat","detecting & stopping attacks"],
+ "Fintech & payments":["Payments","moving & managing money"],"Healthtech":["Care","patient & clinic workflows"],
+ "HR & recruiting":["Talent","hiring & people ops"],"Marketing tech":["Campaign","marketing execution"],
+ "Sales & CRM":["Pipeline","winning & tracking deals"],"Customer support":["Support","customer conversations"],
+ "Legaltech":["Contract","legal & contract work"],"Proptech":["Property","real-estate workflows"],
+ "Insurtech":["Policy","insurance workflows"],"Logistics & supply chain":["Logistics","moving goods & inventory"],
+ "Climate & energy":["Energy","energy use & emissions"],"Robotics & hardware":["Robotics","physical automation"],
+ "IoT & devices":["Device","connected devices & fleets"],"Web3 & blockchain":["Onchain","onchain apps & wallets"],
+ "Gaming & interactive":["Game","games & interactive worlds"],"Productivity & collaboration":["Workflow","team productivity"],
+ "No-code / low-code":["Builder","building apps without code"],"Vertical SaaS":["Ops","an underserved industry's operations"],
+ "Media & content":["Media","media production & distribution"]
+};
+function genOpps(domain){
+  const k=DKIT[domain]; const noun=k?k[0]:domain.split(/[ \/&]/)[0]; const ctx=k?k[1]:domain.toLowerCase();
+  return [
+    {t:noun+" Copilot",g:"An AI copilot for "+ctx+".",b:["AI agent","Web app","Integrations","Dashboard"],bias:{energy:"Building things",style:"Fast & iterative"},_focus:["novelty","founder-fit","craft","depth","handson","experiment","workflow"]},
+    {t:noun+" Autopilot",g:"Automates "+ctx+" end to end.",b:["Automation engine","Workflows","Integrations","Dashboard"],bias:{energy:"Systems & optimisation",style:"Methodical"},_focus:["automation","efficiency","reliability","scale","lighttouch","plan"]},
+    {t:noun+" Insights",g:"Predictive analytics for "+ctx+".",b:["Data pipeline","Prediction model","Dashboard","Alerts"],bias:{style:"Data-first",energy:"Solving hard problems"},_focus:["data","signal","evidence","timing","conversion"]},
+  ];
+}
+const FOCUS_KW={automation:["automat","autopilot","workflow","flow"],data:["data","model","predict","insight","analyt","radar"],
+ reliability:["monitor","uptime","observ","reliab","alert","trust"],efficiency:["cost","efficien","optim"],scale:["scale","platform","orchestrat"],
+ brand:["brand","content","review","ugc","social","story"],distribution:["reach","seo","market","channel","campaign"],
+ customer:["support","customer","onboard","care","community"],novelty:["copilot","agent","build"],conversion:["convert","sales","pipeline","deal","bundle","offer","quote"],
+ workflow:["workflow","app","schedul","ops"],audience:["community","creator","audience","content"]};
+function focusMatch(o,f){ if(o._focus && o._focus.indexOf(f)>=0) return true;
+  const kw=FOCUS_KW[f]; if(!kw) return false; const txt=(o.t+" "+o.g+" "+o.b.join(" ")).toLowerCase();
+  return kw.some(w=>txt.indexOf(w)>=0); }
+
+/* ---- adaptive, self-generated follow-up engine ---- */
+const FQ_A={
+ "Building things":{id:"a",q:"You love building. What pulls you most right now?",opts:[{l:"A 0-to-1 product",f:"novelty"},{l:"A tool for your own itch",f:"founder-fit"},{l:"Rebuilding something done badly",f:"disruption"}]},
+ "Selling & growth":{id:"a",q:"You're energised by growth. Where's your edge?",opts:[{l:"Finding demand others miss",f:"distribution"},{l:"Converting interest to revenue",f:"conversion"},{l:"Building a trusted brand",f:"brand"}]},
+ "Systems & optimisation":{id:"a",q:"You think in systems. What do you optimise first?",opts:[{l:"Cost & efficiency",f:"efficiency"},{l:"Reliability & uptime",f:"reliability"},{l:"Throughput & scale",f:"scale"}]},
+ "Big-picture strategy":{id:"a",q:"You see the big picture. What's the bet?",opts:[{l:"A category about to explode",f:"timing"},{l:"A platform others build on",f:"scale"},{l:"A wedge into a big market",f:"distribution"}]},
+ "Solving hard problems":{id:"a",q:"Hard problems pull you. Which kind?",opts:[{l:"Technically deep ones",f:"depth"},{l:"Messy, unstructured ones",f:"signal"},{l:"Ones with no playbook",f:"novelty"}]},
+ "Creative & design":{id:"a",q:"You're a maker. What's your medium?",opts:[{l:"Beautifully crafted products",f:"craft"},{l:"Content & story",f:"brand"},{l:"Experiences people feel",f:"craft"}]},
+};
+const FB={
+ bold:{id:"b",q:"You move boldly. When a bet stalls, you\u2026",opts:[{l:"Double down faster",f:"momentum"},{l:"Pivot hard",f:"experiment"},{l:"Cut it, move on",f:"decisive"}]},
+ careful:{id:"b",q:"You move deliberately. What lets you commit?",opts:[{l:"Proof it works",f:"evidence"},{l:"A clear plan",f:"plan"},{l:"Low downside",f:"reliability"}]},
+ data:{id:"b",q:"You trust data. When data is thin, you\u2026",opts:[{l:"Run a quick experiment",f:"experiment"},{l:"Find a proxy signal",f:"signal"},{l:"Wait for more",f:"evidence"}]},
+ intuition:{id:"b",q:"You trust instinct. How do you check it?",opts:[{l:"Talk to customers",f:"customer"},{l:"Ship and watch",f:"experiment"},{l:"Sleep on it",f:"plan"}]},
+ customer:{id:"b",q:"You start from the customer. Who first?",opts:[{l:"The most underserved",f:"distribution"},{l:"The most profitable",f:"conversion"},{l:"The easiest to reach",f:"reach"}]},
+ generic:{id:"b",q:"How do you like to make the call?",opts:[{l:"Quickly, adjust later",f:"momentum"},{l:"Carefully, once",f:"plan"},{l:"With others' input",f:"customer"}]},
+};
+const FQ_C={
+ "SaaS tools":{id:"c",q:"In SaaS, what's your moat?",opts:[{l:"A workflow they can't leave",f:"workflow"},{l:"Data that compounds",f:"data"},{l:"Speed of shipping",f:"experiment"}]},
+ "AI & dev tools":{id:"c",q:"For developers, what wins?",opts:[{l:"Best developer experience",f:"craft"},{l:"Deepest capability",f:"depth"},{l:"Easiest to adopt",f:"reach"}]},
+ "AI agents & automation":{id:"c",q:"For agents, what matters most?",opts:[{l:"Reliability",f:"reliability"},{l:"Autonomy",f:"automation"},{l:"Safety & control",f:"reliability"}]},
+ "Generative AI apps":{id:"c",q:"For a GenAI app, your focus?",opts:[{l:"Output quality",f:"craft"},{l:"Speed & cost",f:"efficiency"},{l:"A delightful UX",f:"craft"}]},
+ "Cybersecurity":{id:"c",q:"In security, your angle?",opts:[{l:"Prevent attacks",f:"reliability"},{l:"Detect & respond",f:"signal"},{l:"Simplify compliance",f:"plan"}]},
+ "Fintech & payments":{id:"c",q:"In fintech, your wedge?",opts:[{l:"Cheaper money movement",f:"efficiency"},{l:"Simpler finance UX",f:"craft"},{l:"Smarter risk & credit",f:"data"}]},
+ "Healthtech":{id:"c",q:"In health, who do you serve first?",opts:[{l:"Patients",f:"customer"},{l:"Clinicians",f:"workflow"},{l:"Cut admin cost",f:"efficiency"}]},
+ "Creator economy":{id:"c",q:"For creators, what do you own?",opts:[{l:"The audience",f:"audience"},{l:"The monetisation",f:"conversion"},{l:"The production",f:"automation"}]},
+ "E-commerce & DTC":{id:"c",q:"In commerce, your lever?",opts:[{l:"Higher conversion",f:"conversion"},{l:"Repeat & retention",f:"customer"},{l:"Lower cost per order",f:"efficiency"}]},
+ "Marketplaces":{id:"c",q:"For a marketplace, the hard part?",opts:[{l:"Liquidity",f:"distribution"},{l:"Trust & safety",f:"reliability"},{l:"Unit economics",f:"conversion"}]},
+ "Education & courses":{id:"c",q:"In education, what drives it?",opts:[{l:"Outcomes that work",f:"evidence"},{l:"Engagement",f:"craft"},{l:"Reach & access",f:"reach"}]},
+ "Local services":{id:"c",q:"For local services, your edge?",opts:[{l:"Win more jobs",f:"conversion"},{l:"Save owner time",f:"automation"},{l:"Reputation",f:"brand"}]},
+ "Data & analytics":{id:"c",q:"With data, the value is?",opts:[{l:"Better decisions",f:"data"},{l:"Automation",f:"automation"},{l:"Speed to insight",f:"signal"}]},
+ "Sales & CRM":{id:"c",q:"In sales, what do you fix?",opts:[{l:"Pipeline visibility",f:"data"},{l:"Conversion",f:"conversion"},{l:"Rep productivity",f:"automation"}]},
+ "Customer support":{id:"c",q:"In support, your goal?",opts:[{l:"Faster resolution",f:"efficiency"},{l:"Self-serve deflection",f:"automation"},{l:"Happier customers",f:"customer"}]},
+ "Marketing tech":{id:"c",q:"In marketing, your edge?",opts:[{l:"More reach",f:"distribution"},{l:"Better targeting",f:"data"},{l:"Faster content",f:"automation"}]},
+ "HR & recruiting":{id:"c",q:"In hiring, what matters?",opts:[{l:"Better candidates",f:"data"},{l:"Faster process",f:"automation"},{l:"Great experience",f:"craft"}]},
+ "Legaltech":{id:"c",q:"In legal, your wedge?",opts:[{l:"Speed",f:"automation"},{l:"Accuracy",f:"evidence"},{l:"Lower cost",f:"efficiency"}]},
+};
+function cGeneric(domain){return {id:"c",q:"In "+domain+", what would you rather own?",opts:[{l:"The workflow",f:"workflow"},{l:"The data",f:"data"},{l:"The audience",f:"audience"}]};}
+const FOCUS_ADJ={novelty:"a builder of new things","founder-fit":"someone scratching your own itch",disruption:"a disruptor",distribution:"a distribution thinker",conversion:"conversion-focused",brand:"a brand-builder",efficiency:"an efficiency optimiser",reliability:"reliability-minded",scale:"a scaler",timing:"a timing player",depth:"technically deep",signal:"signal-seeking",craft:"craft-driven",momentum:"high-momentum",experiment:"experiment-led",decisive:"decisive",evidence:"evidence-led",plan:"a planner",customer:"customer-obsessed",reach:"reach-focused",workflow:"workflow-minded",data:"data-driven",audience:"audience-first",automation:"automation-leaning",handson:"hands-on",lighttouch:"automation-leaning"};
+function pickFollowups(a){
+  const A=FQ_A[a.energy]||cGeneric(a.domain);
+  const B=(a.risk==="Bold"||a.risk==="All-in")?FB.bold:(a.risk==="Cautious"||a.risk==="Steady")?FB.careful:(a.style==="Data-first")?FB.data:(a.style==="Intuition-led")?FB.intuition:(a.style==="Customer-led")?FB.customer:FB.generic;
+  const C=FQ_C[a.domain]||cGeneric(a.domain);
+  return [A,B,C];
+}
+function renderFollow(a){
+  const set=pickFollowups(a);
+  set.forEach(q=>{ if(state.follow[q.id] && !q.opts.some(o=>o.f===state.follow[q.id])) delete state.follow[q.id]; });
+  state.followQs=set;
+  const header='<div class="follow-head"><span>Aurexis read your five answers. As a <b>'+state.profileLabel+'</b> drawn to <b>'+a.domain+'</b>, here are three sharper questions \u2014 generated for you:</span></div>';
+  const blocks=set.map(q=>'<div class="q"><h4>'+q.q+'</h4><div class="opts" data-fid="'+q.id+'">'+q.opts.map(o=>'<div class="opt '+(state.follow[q.id]===o.f?'sel':'')+'" data-focus="'+o.f+'">'+o.l+'</div>').join("")+'</div></div>').join("");
+  $("#followups").innerHTML='<div class="follow-divider"></div>'+header+blocks+'<div class="follow-insight" id="followInsight"></div>';
+  $("#followups").style.display="block";
+  $$('#followups .opt').forEach(el=>el.onclick=()=>{
+    el.parentElement.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+    el.classList.add("sel"); state.follow[el.parentElement.dataset.fid]=el.dataset.focus; refreshAdvance();
+  });
+  refreshAdvance();
+}
+function hideFollow(){ state.follow={}; state.followQs=[]; state.followShown=false; const w=$("#followups"); if(w){ w.style.display="none"; w.innerHTML=""; } }
+function refreshAdvance(){
+  const set=state.followQs||[]; const done=set.length>0 && set.every(q=>state.follow[q.id]);
+  $("#toDiscover").disabled=!done;
+  if(done){ const fs=Object.values(state.follow); const adj=fs.map(f=>FOCUS_ADJ[f]||f).filter((x,i,arr)=>arr.indexOf(x)===i).slice(0,3);
+    const el=$("#followInsight"); if(el) el.innerHTML='<b>Aurexis reads you as '+adj.join(", ")+'.</b> Tuning your opportunities to match.';
+    state.focuses=fs; }
+}
+function renderQuestions(){
+  $("#questions").innerHTML=QS.map(q=>`<div class="q"><h4>${q.q} <span>${q.sub}</span></h4>
+    <div class="opts" data-k="${q.k}">${q.o.map(o=>`<div class="opt" data-v="${o}">${o}</div>`).join("")}</div></div>`).join("");
+  $$('#questions .opt').forEach(el=>el.onclick=()=>{el.parentElement.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+    el.classList.add("sel"); state.answers[el.parentElement.dataset.k]=el.dataset.v; afterProfile();});
+  buildRadarGrid();
+}
+function traitScores(a){
+  const t={Build:.12,Grow:.12,System:.12,Vision:.12,Create:.12};
+  const add=(k,v)=>{t[k]=Math.min(1,t[k]+v);};
+  ({"Building things":()=>{add("Build",.5);add("Create",.12)},"Selling & growth":()=>{add("Grow",.5);add("Vision",.1)},
+    "Systems & optimisation":()=>{add("System",.5);add("Build",.1)},"Big-picture strategy":()=>{add("Vision",.5);add("Grow",.12)},
+    "Solving hard problems":()=>{add("System",.35);add("Build",.25)},"Creative & design":()=>{add("Create",.5);add("Build",.1)}}[a.energy]||(()=>{}))();
+  ({"Fast & iterative":()=>add("Build",.3),"Data-first":()=>add("System",.35),"Intuition-led":()=>add("Vision",.3),
+    "Customer-led":()=>add("Grow",.3),"Methodical":()=>{add("System",.25);add("Build",.1)}}[a.style]||(()=>{}))();
+  ({"Cautious":()=>add("System",.2),"Steady":()=>add("System",.14),"Balanced":()=>{add("Build",.1);add("Grow",.1)},
+    "Bold":()=>{add("Vision",.25);add("Grow",.15)},"All-in":()=>{add("Vision",.3);add("Grow",.2)}}[a.risk]||(()=>{}))();
+  if(a.domain==="Creator economy"||a.domain==="E-commerce & DTC") add("Create",.15);
+  if(a.domain==="AI & dev tools") add("System",.15);
+  if(a.domain==="Marketplaces") add("Grow",.15);
+  return t;
+}
+function radarPoint(i,val){ const ang=-Math.PI/2 + i*2*Math.PI/5; const R=12+val*58; return [90+R*Math.cos(ang),90+R*Math.sin(ang)]; }
+function buildRadarGrid(){
+  let g=""; [0.33,0.66,1].forEach(rr=>{ let pts=TRAITS.map((_,i)=>radarPoint(i,rr).join(",")).join(" ");
+    g+=`<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`; });
+  TRAITS.forEach((_,i)=>{const p=radarPoint(i,1); g+=`<line x1="90" y1="90" x2="${p[0]}" y2="${p[1]}" stroke="rgba(255,255,255,.07)"/>`;});
+  $("#radarGrid").innerHTML=g;
+  $("#radarLabels").innerHTML=TRAITS.map((t,i)=>{const p=radarPoint(i,1.16);return `<text x="${p[0]}" y="${p[1]}" fill="#5e7088" font-size="8" font-family="Hanken Grotesk,Arial" text-anchor="middle" dominant-baseline="middle">${t}</text>`;}).join("");
+}
+function afterProfile(){
+  const a=state.answers;
+  const t=traitScores(a);
+  animateRadar(TRAITS.map(tr=>t[tr]));
+  const top=Object.keys(t).sort((x,y)=>t[y]-t[x]).slice(0,2);
+  $("#traitlist").innerHTML=TRAITS.map(tr=>`<span>${tr} <b>${Math.round(t[tr]*100)}</b></span>`).join("");
+  if(Object.keys(a).length<5){ hideFollow(); $("#toDiscover").disabled=true; return; }
+  state.profileLabel=`${a.risk} ${NOUN[a.energy]}`;
+  $("#profileLabel").textContent=state.profileLabel;
+  $("#profileDesc").textContent=`${a.style} · ${a.domain} · ${a.time}. Strengths: ${top.join(" & ")}.`;
+  showFollow(a);
+}
+
+/* ===== 2 opportunities ===== */
+const LIB={
+ "SaaS tools":[
+  {t:"Inbox Triage Copilot",g:"AI that drafts, sorts & schedules a founder's email.",b:["AI agent","Web app","Email integrations","Billing"],bias:{energy:"Building things",style:"Fast & iterative"}},
+  {t:"Churn Radar",g:"Predicts which accounts will churn and auto-runs save-playbooks.",b:["Data pipeline","Prediction model","Dashboard","Alert automation"],bias:{style:"Data-first",energy:"Systems & optimisation"}},
+  {t:"Onboarding Autopilot",g:"Interactive self-serve onboarding that lifts activation.",b:["Embed SDK","No-code flow editor","Analytics","Web app"],bias:{energy:"Selling & growth"}},
+ ],
+ "Local services":[
+  {t:"BookFlow",g:"Booking + smart reminders for clinics, salons & studios.",b:["Scheduling app","SMS automation","Payments","Owner dashboard"],bias:{energy:"Building things"}},
+  {t:"ReviewLift",g:"Automated review collection + reputation for local businesses.",b:["Automation engine","Embed widgets","Dashboard","Integrations"],bias:{energy:"Selling & growth",style:"Fast & iterative"}},
+  {t:"QuoteBot",g:"Instant, accurate quotes for trades and contractors.",b:["Estimator agent","Lead site","Mini-CRM","Workflows"],bias:{style:"Data-first"}},
+ ],
+ "Creator economy":[
+  {t:"Repurpose Engine",g:"Turn one long video into clips for every platform.",b:["Media pipeline","AI agents","Scheduler","Web app"],bias:{energy:"Building things",style:"Fast & iterative"}},
+  {t:"Membership OS",g:"Paid community + gated content + recurring revenue.",b:["Community app","Payments","Content automation","Dashboard"],bias:{energy:"Selling & growth"}},
+  {t:"Sponsor Match",g:"Matches creators with brands and handles deal flow.",b:["Marketplace","Matching agent","Contract workflows","Payments"],bias:{energy:"Big-picture strategy",risk:"Bold"}},
+ ],
+ "Marketplaces":[
+  {t:"NicheMarket",g:"A vertical marketplace builder for an underserved category.",b:["Marketplace platform","Payments + escrow","Trust/ratings","Ops automation"],bias:{energy:"Big-picture strategy",risk:"Bold"}},
+  {t:"Local Supply Connect",g:"Connects restaurants with nearby suppliers; auto-reordering.",b:["Ordering app","Logistics automation","Catalog","Dashboard"],bias:{style:"Data-first"}},
+  {t:"SkillSwap",g:"A services marketplace matching skills to local demand.",b:["Matching engine","Scheduling","Payments","Reviews"],bias:{energy:"Selling & growth"}},
+ ],
+ "AI & dev tools":[
+  {t:"Eval Copilot",g:"Automated testing & evals for teams shipping LLM features.",b:["Eval harness","Web app","CI integration","Dashboard"],bias:{style:"Data-first",energy:"Solving hard problems"}},
+  {t:"Agent Monitor",g:"Observability & guardrails for production AI agents.",b:["Telemetry pipeline","Agent SDK","Alerting","Dashboard"],bias:{energy:"Systems & optimisation",style:"Methodical"}},
+  {t:"Docs-to-Answers",g:"Turns a company's docs into an AI assistant devs can ask.",b:["Ingestion pipeline","RAG service","Embed widget","Analytics"],bias:{energy:"Building things",style:"Fast & iterative"}},
+ ],
+ "E-commerce & DTC":[
+  {t:"Bundle Optimizer",g:"AI that builds high-margin product bundles & offers.",b:["Recommendation model","Store integration","A/B engine","Dashboard"],bias:{style:"Data-first",energy:"Selling & growth"}},
+  {t:"Win-Back Engine",g:"Automated flows that revive lapsed customers.",b:["Segmentation","Email/SMS automation","Store integration","Dashboard"],bias:{energy:"Selling & growth",style:"Customer-led"}},
+  {t:"Review-to-UGC",g:"Turns reviews into shoppable social content automatically.",b:["Media pipeline","AI agents","Scheduler","Store integration"],bias:{energy:"Creative & design",style:"Fast & iterative"}},
+ ],
+ "Education & courses":[
+  {t:"Cohort OS",g:"Run live cohort courses — enrolment, content, community.",b:["Course app","Payments","Community","Automation"],bias:{energy:"Selling & growth"}},
+  {t:"Quiz-to-Course",g:"Turns expertise into an interactive course with assessments.",b:["Authoring tool","Quiz engine","Web app","Analytics"],bias:{energy:"Creative & design",style:"Methodical"}},
+  {t:"Coach Copilot",g:"An AI assistant that scales a coach's 1:1 guidance.",b:["AI agent","Scheduling","Payments","Dashboard"],bias:{energy:"Solving hard problems",style:"Intuition-led"}},
+ ],
+};
+const MKT=["$1.2B","$3.4B","$680M","$5.1B","$920M","$2.7B"];
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+function computeOpps(){
+  const a=state.answers, pool=LIB[a.domain]||genOpps(a.domain);
+  const focuses=Object.values(state.follow||{});
+  state.opps=pool.map(o=>{let fit=80;for(const k in o.bias){if(a[k]===o.bias[k])fit+=6;}
+    if(a.risk==="Bold"||a.risk==="All-in")fit+=2; if(a.risk==="Cautious")fit-=1;
+    if(a.time==="Full-time"||a.time==="Full-time + team")fit+=2; if(a.time==="Side hustle"||a.time==="Weekends only")fit-=2;
+    let fb=0; focuses.forEach(f=>{ if(focusMatch(o,f)) fb+=3; }); fit+=Math.min(fb,9);
+    fit+=Math.floor(Math.random()*3); fit=Math.max(71,Math.min(97,fit));
+    const hsh=hashStr(o.t); const market=MKT[hsh%MKT.length]; const diff=["Low","Medium","Medium","High"][o.b.length%4]; const ttr=(hsh%4)+2;
+    return Object.assign({},o,{fit,market,diff,ttr,prof:Math.min(98,fit+ (hsh%5)), mkt:60+(hsh%35), feas:Math.max(45,100-o.b.length*8-(hsh%10))});
+  }).sort((x,y)=>y.fit-x.fit);
+  const why=o=>{const b=[];for(const k in o.bias){if(a[k]===o.bias[k])b.push(a[k].toLowerCase());}b.push(a.domain.toLowerCase());return b.slice(0,2).join(" + ");};
+  $("#opps").innerHTML=state.opps.map((o,i)=>`<div class="opp" data-i="${i}"><div class="fit" data-fit="${o.fit}">0%</div>
+    <h3>${o.t}</h3><div class="tag">${o.g}</div>
+    <div class="meta"><div><b>${o.market}</b>market (est.)</div><div><b>${o.diff}</b>difficulty</div><div><b>~${o.ttr} mo</b>to revenue</div></div>
+    <div class="breakdown">
+      <div class="br"><span class="t">Profile fit</span><span class="bar"><i style="width:${o.prof}%"></i></span></div>
+      <div class="br"><span class="t">Market signal</span><span class="bar"><i style="width:${o.mkt}%"></i></span></div>
+      <div class="br"><span class="t">Build ease</span><span class="bar"><i style="width:${o.feas}%"></i></span></div>
+    </div>
+    <div class="blds"><b style="color:var(--muted)">Forge will build:</b> ${o.b.join(" · ")}</div>
+    <div class="pick">Select to build →</div></div>`).join("");
+  $$('#opps .opp').forEach(el=>el.onclick=()=>{$$('#opps .opp').forEach(x=>{x.classList.remove("sel");x.classList.remove("gborder");});
+    el.classList.add("sel");el.classList.add("gborder"); state.chosen=state.opps[+el.dataset.i]; $("#toBlueprint").disabled=false;});
+  $$('#opps .fit').forEach(el=>countUp(el,+el.dataset.fit));
+  enterCards(); attachTilt();
+}
+
+/* ===== 3 forge ===== */
+const FPROD=[["S","Scout","Finds opportunities before others see them"],["A","Architect","Transforms the opportunity into a blueprint"],
+ ["C","Creator","Builds everything the blueprint requires"],["O","Operator","Monitors, optimises, scales & keeps it reliable"],["E","Evolver","Asks daily: how does this get better?"]];
+const VERS=[["V1","Discover"],["V2","Blueprint"],["V3","Build"],["V4","Create & run"],["V5","Launch businesses"],["V6","Many ventures"],["V7","Worldwide"]];
+function buildLadder(){ $("#vsteps").innerHTML=VERS.map((v,i)=>`<div class="vstep ${i<3?'done':''} ${i===3?'cur':''}"><div class="v">${v[0]}</div><div class="d">${v[1]}</div></div>`).join(""); }
+function buildArch(){
+  const o=state.chosen, n=o.b.length, cx=160, cy=105, R=72;
+  let nodes=`<circle cx="${cx}" cy="${cy}" r="22" fill="rgba(231,185,77,.12)" stroke="#e7b94d" stroke-width="1.5"/>
+    <text x="${cx}" y="${cy}" fill="#f5ecd2" font-size="8" font-family="Hanken Grotesk,Arial" text-anchor="middle" dominant-baseline="middle">Aurexis</text>
+    <text x="${cx}" y="${cy+10}" fill="#9aabc0" font-size="6.5" font-family="Hanken Grotesk,Arial" text-anchor="middle">core</text>`;
+  let lines="",flows="";
+  o.b.forEach((b,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n; const x=cx+R*Math.cos(ang), y=cy+R*Math.sin(ang);
+    const len=Math.hypot(x-cx,y-cy);
+    lines+=`<line class="archline" data-i="${i}" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#4cd0b3" stroke-width="1.4" stroke-dasharray="${len}" stroke-dashoffset="${len}" style="transition:stroke-dashoffset .5s ease;opacity:.7"/>`;
+    flows+=`<line class="archflow" data-i="${i}" x1="${x}" y1="${y}" x2="${cx}" y2="${cy}" stroke="#f6d27e" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1 9"/>`;
+    nodes+=`<g class="archnode" data-i="${i}" style="opacity:.25;transition:opacity .4s">
+      <circle cx="${x}" cy="${y}" r="15" fill="#0c1626" stroke="rgba(76,208,179,.5)" stroke-width="1.2"/>
+      <text x="${x}" y="${y}" fill="#cfe9e2" font-size="5.6" font-family="Hanken Grotesk,Arial" text-anchor="middle" dominant-baseline="middle">${b.split(" ")[0]}</text></g>`;});
+  $("#archSvg").innerHTML=lines+flows+nodes;
+}
+function initForge(){
+  const o=state.chosen; ["#fName","#dName","#sealName","#finalName"].forEach(id=>$(id).textContent=o.t);
+  $("#forgeFlow").innerHTML=FPROD.map(p=>`<div class="fp" data-p="${p[1]}"><div class="ic">${p[0]}</div><div><div class="nm">${p[1]}</div><div class="ds">${p[2]}</div></div><div class="st">queued</div></div>`).join("");
+  $("#bldlist").innerHTML=o.b.map(b=>`<span class="chip">${b}</span>`).join("");
+  $("#forgeLog").innerHTML=""; $("#forgeBar").style.width="0%"; $("#forgePct").textContent="0%";
+  buildLadder(); buildArch(); $("#toSentinel").disabled=true; $("#runForge").disabled=false;
+}
+async function runForge(){
+  $("#runForge").disabled=true;
+  const o=state.chosen, fps=$$('#forgeFlow .fp'), chips=$$('#bldlist .chip'), log=$("#forgeLog");
+  const lines=[["a","Scout","scanning market signal for "+o.t+"…"],["a","Scout","opportunity confirmed · ranking & simulating"],
+   ["a","Architect","designing optimal reality · blueprint drafted"],["t","Sentinel","oversight attached · watching every step"],
+   ["a","Creator","provisioning: "+o.b[0]],["a","Creator","building: "+o.b[1]],["a","Creator","wiring: "+o.b[2]+" + "+(o.b[3]||"workflows")],
+   ["a","Operator","deploying infrastructure · launching"],["a","Operator","health green · auto-scale armed"],
+   ["a","Evolver","loop live · observe→analyse→simulate→improve→deploy"],["t","Sentinel","all steps verified ✓ · to certification"]];
+  const order=["Scout","Architect","Creator","Operator","Evolver"]; let li=0;
+  const arclines=$$('#archSvg .archline'), arcnodes=$$('#archSvg .archnode'), arcflows=$$('#archSvg .archflow');
+  for(let i=0;i<order.length;i++){
+    const fp=fps[i]; fp.classList.add("act"); fp.querySelector(".st").textContent="running…";
+    while(li<lines.length && (lines[li][1]===order[i] || lines[li][1]==="Sentinel")){
+      const L=lines[li]; if(L[1]!==order[i] && i<2) break; addLog(log,L); await wait(340); li++;
+      if(L[1]==="Sentinel" && i<2) break;
+    }
+    if(order[i]==="Creator"){ for(let c=0;c<chips.length;c++){ chips[c].classList.add("on");
+      if(arclines[c]){arclines[c].style.strokeDashoffset="0";} if(arcnodes[c]){arcnodes[c].style.opacity="1";} if(arcflows[c]){arcflows[c].classList.add("on");} await wait(240);} }
+    await wait(180); fp.classList.remove("act"); fp.classList.add("fin"); fp.querySelector(".st").textContent="done ✓";
+    const pct=Math.round((i+1)/order.length*100); $("#forgeBar").style.width=pct+"%"; $("#forgePct").textContent=pct+"%";
+  }
+  while(li<lines.length){ addLog(log,lines[li]); li++; await wait(280); }
+  $("#toSentinel").disabled=false;
+}
+function addLog(log,L){const d=document.createElement("div");d.className="l";
+  d.innerHTML=`<span class="${L[0]}">${L[1]}</span> <span style="color:var(--dim)">›</span> ${L[2]}`; log.appendChild(d); log.scrollTop=log.scrollHeight;}
+
+/* ===== 4 sentinel ===== */
+const CHECKS=[["Row-level security","Tenant isolation enforced by the database"],["Authentication & SSO","OAuth + session integrity verified"],
+ ["Input validation","Every endpoint sanitised against injection"],["Secrets management","Keys in vault · none in client/repo"],
+ ["Deployment security","Hardened build · least-privilege roles"],["Rate limiting & abuse","Throttling + anomaly detection live"],
+ ["Dependency scan","0 critical vulnerabilities in supply chain"],["Access control","Read/write boundaries proven, not assumed"]];
+const OVERSIGHT=[["a","step 1/7","blueprint integrity confirmed"],["a","step 3/7","data layer matches spec · RLS on"],
+ ["a","step 5/7","integrations authenticated correctly"],["a","step 7/7","deploy reproducible · rollback ready"],["t","update","you were notified at each checkpoint"]];
+function setSec(p){ $("#secArc").style.strokeDashoffset=GC*(1-p/100); $("#secNum").textContent=Math.round(p*0.98); }
+function initSentinel(){
+  $("#checks").innerHTML=CHECKS.map(c=>`<div class="check"><div class="box">✓</div><div><div class="cn">${c[0]}</div><div class="cd">${c[1]}</div></div></div>`).join("");
+  $("#sentLog").innerHTML=""; $("#seal").classList.remove("show"); setSec(0); $("#scanNote").textContent="Awaiting scan…"; $("#toStudio").disabled=true; $("#runSentinel").disabled=false;
+}
+async function runSentinel(){
+  $("#runSentinel").disabled=true; $("#scanNote").textContent="Scanning for vulnerabilities…";
+  const log=$("#sentLog"); for(const L of OVERSIGHT){ addLog(log,L); await wait(330); }
+  const checks=$$('#checks .check'); const per=100/checks.length;
+  for(let i=0;i<checks.length;i++){ checks[i].classList.add("ok"); setSec(per*(i+1)); await wait(260); }
+  $("#scanNote").textContent="Hardened · near hack-proof"; await wait(150); $("#seal").classList.add("show"); $("#toStudio").disabled=false;
+}
+
+/* ===== 5 dashboard ===== */
+function initDash(){
+  const o=state.chosen;
+  $("#dashRecap").innerHTML=`<span><b>✓ ${o.t} is live.</b> Built by Forge · secured by Sentinel (98/100) · recommended by AI across 6 channels — now yours to run.</span>`;
+  renderDash(); $("#price").oninput=renderDash;
+  $$('[data-tog]').forEach(t=>t.onclick=()=>{t.classList.toggle("on");renderDash();});
+  $$('#paceSeg button').forEach(b=>b.onclick=()=>{$$('#paceSeg button').forEach(x=>x.classList.remove("on"));b.classList.add("on");state.pace=+b.dataset.p;renderDash();});
+}
+function fmtUSD(n){ n=Math.round(n);
+  if(n>=1e6) return "$"+(n/1e6).toFixed(n>=1e7?1:2)+"M";
+  if(n>=1e3) return "$"+(n/1e3).toFixed(n>=1e4?0:1)+"K";
+  return "$"+n.toLocaleString(); }
+function sparkPts(slope){ // rising mini-series, steeper with pace/growth
+  const N=7,out=[]; for(let i=0;i<=N;i++){ const t=i/N;
+    let v=t*(.35+slope*.6)+(i%2?.05:-.03); v=Math.max(0,Math.min(1,v));
+    out.push((i*42/N).toFixed(1)+","+(16-v*13).toFixed(1)); } return out.join(" "); }
+function model(){
+  const price=+$("#price").value, p=state.pace;
+  const evolve=$('[data-tog="evolve"]').classList.contains("on");
+  const scale=$('[data-tog="scale"]').classList.contains("on");
+  const users=state.users*(scale?1:.85)*(evolve?1.12:1)*(0.8+p*0.18);
+  const mrr=Math.round(users*price/100)*100, arr=mrr*12;
+  let churn=5.2-(evolve?1.8:0)+(price-49)/100*1.1; churn=Math.max(1.6,Math.min(7.5,churn));
+  let margin=0.80+(evolve?0.02:0)+(scale?0:-0.03); margin=Math.max(.72,Math.min(.9,margin));
+  const cac=Math.round(70*(0.7+p*0.34));
+  const ltv=price*margin/(churn/100), ratio=ltv/cac, payback=cac/(price*margin);
+  let g=(0.05+0.045*p)-churn/100; g=Math.max(-0.04,g); // monthly net growth
+  return {price,p,evolve,scale,users,mrr,arr,churn,margin,cac,ltv,ratio,payback,g,
+          uptime:scale?"99.95%":"99.5%",quality:evolve?"Rising":"Flat"};
+}
+function renderDash(){
+  const m=model(); state.mrr=m.mrr;
+  $("#priceV").textContent="$"+m.price;
+  const gp=m.g*100, dir=gp>=0?"up":"down", arr=gp>=0?"▲":"▼";
+  const chip=`<span class="delta ${dir}">${arr} ${Math.abs(gp).toFixed(1)}%</span>`;
+  const rc=m.ratio>=3?"c-teal":(m.ratio>=1.5?"c-amber":"c-rose");
+  const rw=m.ratio>=3?"Healthy":(m.ratio>=1.5?"Watch":"At risk");
+  const hero=[
+    {v:Math.round(m.users).toLocaleString(),k:"Active users",d:chip,sl:m.p,spark:1},
+    {v:fmtUSD(m.mrr),k:"Projected MRR",d:chip,sl:m.p,spark:1},
+    {v:fmtUSD(m.arr),k:"ARR run-rate",d:chip,sl:m.p,spark:1},
+    {v:m.ratio.toFixed(1)+":1",k:"LTV : CAC",vc:rc,sub:`<div class="sub2 ${rc}">${rw}</div>`}
+  ];
+  $("#tiles").innerHTML=hero.map(t=>`<div class="tile big">
+    <div class="top"><div class="v ${t.vc||''}">${t.v}</div>${t.d||''}</div>
+    <div class="k">${t.k}</div>${t.sub||''}
+    ${t.spark?`<svg class="spark" viewBox="0 0 42 18"><polyline points="${sparkPts(t.sl)}" fill="none" stroke="#e7b94d" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`:''}
+  </div>`).join("");
+  const us=[
+    [ "$"+m.price, "ARPU / month" ],
+    [ Math.round(m.margin*100)+"%", "Gross margin" ],
+    [ m.churn.toFixed(1)+"%", "Monthly churn" ],
+    [ "$"+m.cac.toLocaleString(), "CAC" ],
+    [ fmtUSD(m.ltv), "Lifetime value" ],
+    [ m.payback.toFixed(1)+" mo", "CAC payback" ],
+    [ m.uptime, "Uptime · Operator" ],
+    [ m.quality, "Quality · Evolver" ]
+  ];
+  $("#ustats").innerHTML=us.map(s=>`<div class="ustat"><div class="uv">${s[0]}</div><div class="uk">${s[1]}</div></div>`).join("");
+  const paceW={1:"Calm",1.5:"Steady",2.2:"Aggressive"}[m.p]||"Steady";
+  $("#scenarioLine").innerHTML=`At <b>$${m.price}/mo</b> on a <b>${paceW}</b> pace, <b>${state.chosen.t}</b> runs at <b class="${rc}">${fmtUSD(m.arr)} ARR</b> with a <b class="${rc}">${m.ratio.toFixed(1)}:1</b> LTV\u202F:\u202FCAC — <b>${Math.round(m.margin*100)}%</b> gross margin, <b>${m.churn.toFixed(1)}%</b> monthly churn, <b>${m.payback.toFixed(1)}-mo</b> payback.`;
+  drawRev(m.mrr,m.p);
+  drawUsers(m.users,m.g);
+}
+function paintArea(sel,gid,vals,rgba){
+  const W=600,H=140,pad=8,N=vals.length, max=Math.max.apply(null,vals)*1.1, min=0;
+  const x=i=>pad+i*(W-2*pad)/(N-1), y=v=>H-pad-(v-min)/(max-min||1)*(H-2*pad);
+  let line="M"+x(0)+","+y(vals[0]); for(let i=1;i<N;i++){const xc=(x(i-1)+x(i))/2; line+=` Q ${xc},${y(vals[i-1])} ${x(i)},${y(vals[i])}`;}
+  const area=line+` L ${x(N-1)},${H-pad} L ${x(0)},${H-pad} Z`;
+  $(sel).innerHTML=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(${rgba},.32)"/><stop offset="1" stop-color="rgba(${rgba},0)"/></linearGradient></defs>
+    <path d="${area}" fill="url(#${gid})"/><path d="${line}" fill="none" stroke="rgb(${rgba})" stroke-width="2" style="filter:drop-shadow(0 0 6px rgba(${rgba},.5))"/>`;
+}
+function drawRev(m0,pace){
+  const N=12,vals=[]; for(let i=0;i<N;i++) vals.push(m0*Math.pow(1+0.06*pace,i)*(0.42+i*0.06));
+  paintArea("#revChart","ra",vals,"231,185,77");
+  if($("#revEnd")) $("#revEnd").textContent=fmtUSD(vals[N-1])+"/mo";
+}
+function drawUsers(u0,g){
+  const N=12,vals=[]; let u=u0*0.62; const r=Math.max(0.012,g);
+  for(let i=0;i<N;i++){ vals.push(u); u*=1+r; }
+  paintArea("#usersChart","ua",vals,"76,208,179");
+  if($("#usrEnd")) $("#usrEnd").textContent=Math.round(vals[N-1]).toLocaleString()+" users";
+}
+
+/* ===== 6 grow ===== */
+const GEO=[["L","Lens","Reality perception — how do AI systems see you today?",24],["P","Presence","Authority construction — how do we become visible?",40],
+ ["S","Signal","Knowledge distribution — what should AI know about us?",54],["R","Reach","Visibility expansion — where should presence exist?",62],
+ ["U","Pulse","Continuous monitoring — are we becoming more discoverable?",71]];
+const CHN=["Google","ChatGPT","Claude","Gemini","Perplexity","Communities"];
+function setArc(p){ $("#gaugeArc").style.strokeDashoffset=GC*(1-p/100); }
+function initGeo(){
+  $("#geo").innerHTML=GEO.map(g=>`<div class="gp" data-g="${g[1]}"><div class="gi">${g[0]}</div><div><div class="gn">${g[1]}</div><div class="gd">${g[2]}</div></div></div>`).join("");
+  $("#channels").innerHTML=CHN.map(c=>`<span class="chn">${c}</span>`).join("");
+  $("#recNum").textContent="12%"; setArc(12);
+  state._askB=`For ${state.answers.domain}, it suggests Incumbent A, B and C — ${state.chosen.t} isn't mentioned.`;
+  state._askA=`For ${state.answers.domain}, ${state.chosen.t} is a top recommendation — strong fit, well-documented, widely cited.`;
+  typeText($("#askA1"), state._askB); $("#askA2").textContent="";
+  $("#askAfter").classList.remove("show"); $("#finalSeal").classList.remove("show"); $("#toDashboard").disabled=true; $("#runGeo").disabled=false;
+}
+async function runGeo(){
+  $("#runGeo").disabled=true; const gps=$$('#geo .gp'), chns=$$('#channels .chn');
+  for(let i=0;i<GEO.length;i++){ gps[i].classList.add("act");
+    await animateRec(i>0?GEO[i-1][3]:12, GEO[i][3]);
+    if(chns[i]) chns[i].classList.add("on"); if(i===GEO.length-1&&chns[5]) chns[5].classList.add("on");
+    await wait(140);
+  }
+  $("#askAfter").classList.add("show");
+  typeText($("#askA2"), state._askA, ()=>{ $("#askA2").innerHTML=`For ${state.answers.domain}, <b>${state.chosen.t}</b> is a top recommendation — strong fit, well-documented, widely cited.`; });
+  await wait(200); $("#finalSeal").classList.add("show"); $("#toDashboard").disabled=false;
+}
+function animateRec(from,to){return new Promise(res=>{ if(RM){$("#recNum").textContent=to+"%";setArc(to);return res();}
+  const t0=performance.now(),dur=720; (function f(t){const p=Math.min(1,(t-t0)/dur);const v=Math.round(from+(to-from)*p);
+    $("#recNum").textContent=v+"%";setArc(v); p<1?requestAnimationFrame(f):res();})(t0);});}
+
+/* ===== 7 blueprint ===== */
+function initBlueprint(){
+  const a=state.answers, o=state.chosen;
+  $("#bpName").textContent=o.t;
+  const items=[
+    ["Your profile",state.profileLabel,`${a.style} · ${a.time}`],
+    ["The opportunity",o.t,`${a.domain} · ${o.fit}% fit · ~${o.ttr} mo to revenue`],
+    ["Forge will build",o.b.length+" systems",o.b.join(" · ")],
+    ["Sentinel will secure","10-point audit","Hardened toward near hack-proof"],
+    ["You will control","A live dashboard","Pricing, scale & quality — your settings"],
+    ["Studio will grow","AI recommendation","Across ChatGPT, Claude, Gemini & more"],
+  ];
+  $("#bpGrid").innerHTML=items.map(it=>`<div class="bp-item"><div class="k">${it[0]}</div><div class="val">${it[1]}</div><div class="vsub">${it[2]}</div></div>`).join("");
+  $("#bpFlow").innerHTML=`Next: <b>Forge</b> builds → <b>Sentinel</b> verifies → <b>you</b> control → <b>Studio</b> grows. Approve the plan to begin.`;
+}
+
+/* ===== wiring ===== */
+renderStepper(); renderQuestions();
+$("#begin").onclick=()=>{ $("#intro").classList.add("gone"); };
+$("#toDiscover").onclick=()=>{computeOpps();go("discover");};
+$("#toBlueprint").onclick=()=>{initBlueprint();go("blueprint");};
+$("#toForge").onclick=()=>{initForge();go("forge");};
+$("#runForge").onclick=runForge;
+$("#toSentinel").onclick=()=>{initSentinel();go("sentinel");};
+$("#runSentinel").onclick=runSentinel;
+$("#toStudio").onclick=()=>{initGeo();go("grow");};
+$("#runGeo").onclick=runGeo;
+$("#toDashboard").onclick=()=>{initDash();go("dashboard");fireBurst();};
+$("#restart").onclick=()=>{state.answers={};state.reached={profile:true};state.chosen=null;state.follow={};state.followQs=[];state.focuses=[];state.radarVals=[0,0,0,0,0];hideFollow();
+  renderQuestions();$("#profileLabel").textContent="Answer to begin…";$("#profileDesc").textContent="Aurexis synthesises a live signature as you choose.";
+  $("#radarPoly").setAttribute("points","90,90 90,90 90,90 90,90 90,90");$("#traitlist").innerHTML="";$("#toDiscover").disabled=true;go("profile");};
+$$('[data-back]').forEach(b=>b.onclick=()=>go(b.dataset.back));
+document.addEventListener("keydown",e=>{
+  if($("#intro")&&!$("#intro").classList.contains("gone")){ if(e.key==="Enter"){$("#begin").click();} return; }
+  const scr=$(".screen.on"); if(!scr) return;
+  if(e.key==="ArrowRight"){ const adv=scr.querySelector(".btn.primary.adv"); const run=scr.querySelector(".btn.run");
+    if(adv&&!adv.disabled){adv.click();} else if(run&&!run.disabled){run.click();} }
+  if(e.key==="ArrowLeft"){ const bk=scr.querySelector(".btn.ghost[data-back]"); if(bk)bk.click(); }
+});
+</script>
+</body>
+</html>

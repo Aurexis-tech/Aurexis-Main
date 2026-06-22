@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurexis — Opportunity-to-Reality Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,0,700;9..144,1,500;9..144,1,600&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+<canvas id="bgcanvas"></canvas>
+
+<!-- INTRO -->
+<div id="intro">
+  <svg class="big-emblem" viewBox="0 0 120 120" fill="none">
+    <g class="r">
+      <circle cx="60" cy="60" r="54" stroke="rgba(231,185,77,.22)" stroke-width="1"/>
+      <circle cx="60" cy="60" r="40" stroke="rgba(231,185,77,.45)" stroke-width="1.2" stroke-dasharray="3 6"/>
+      <circle cx="60" cy="60" r="26" stroke="rgba(76,208,179,.6)" stroke-width="1.4"/>
+      <circle cx="114" cy="60" r="2.4" fill="#e7b94d"/>
+      <circle cx="60" cy="20" r="1.8" fill="#4cd0b3"/>
+    </g>
+    <circle cx="60" cy="60" r="6" fill="#e7b94d"/>
+  </svg>
+  <div class="kick">Aurexis · Opportunity-to-Reality Engine</div>
+  <h1>Turn who you are into <em>what's real.</em></h1>
+  <p>Aurexis reads your personality, finds the opportunity that fits you, builds it, secures it, hands you the controls, and takes it to market — one continuous engine.</p>
+  <div class="flowline"><b>Profile → Opportunity → Forge → Sentinel → Dashboard → Studio</b></div>
+  <button class="cta" id="begin">Begin the engine →</button>
+  <div class="introchips"><span>Forge · create</span><span>Sentinel · verify</span><span>Studio · grow</span></div>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <svg class="emblem" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="19" stroke="rgba(231,185,77,.25)" stroke-width="1"/>
+        <circle cx="21" cy="21" r="13" stroke="rgba(231,185,77,.5)" stroke-width="1.2"/>
+        <circle cx="21" cy="21" r="7.5" stroke="rgba(76,208,179,.7)" stroke-width="1.2"/>
+        <circle cx="21" cy="21" r="2.8" fill="#e7b94d"/><circle cx="40" cy="21" r="1.6" fill="#4cd0b3"/>
+      </svg>
+      <div><div class="nm">Aurexis</div><div class="sb">Opportunity-to-Reality Engine</div></div>
+    </div>
+    <div class="legend"><span class="lg-c"><i></i>Forge · create</span><span class="lg-v"><i></i>Sentinel · verify</span><span class="lg-g"><i></i>Studio · grow</span></div>
+  </div>
+
+  <div class="rail"><div class="railinner"><div class="track"></div><div class="fill" id="railfill"></div><div class="nodes" id="nodes"></div></div></div>
+
+  <!-- 1 PROFILE -->
+  <section class="screen on" data-s="profile">
+    <div class="eyebrow">Step 1 · It starts with you</div>
+    <h1 class="scr">Aurexis reads who you are first</h1>
+    <p class="lead">Before a single line is built, Aurexis profiles your <b>personality and decision-making style</b>, then finds opportunities matched to <b>you</b> — beginning in business, later expanding to finance, education, and beyond.</p>
+    <div class="grid gp2">
+      <div class="panel gborder"><div id="questions"></div><div id="followups"></div></div>
+      <div class="panel">
+        <div class="sig">
+          <h4>Your profile signature</h4>
+          <div class="pl" id="profileLabel">Answer to begin…</div>
+          <div class="pd" id="profileDesc">Aurexis synthesises a live signature as you choose.</div>
+          <div class="radarwrap">
+            <svg viewBox="0 0 180 180" width="200" height="200" id="radar">
+              <g id="radarGrid"></g>
+              <polygon id="radarPoly" points="90,90 90,90 90,90 90,90 90,90" fill="rgba(231,185,77,.18)" stroke="#e7b94d" stroke-width="1.6"/>
+              <g id="radarLabels"></g>
+            </svg>
+          </div>
+          <div class="traitlist" id="traitlist"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="btn primary adv" id="toDiscover" disabled>Find my opportunities →</button></div>
+  </section>
+
+  <!-- 2 DISCOVER -->
+  <section class="screen" data-s="discover">
+    <div class="eyebrow">Step 2 · Matched to your profile</div>
+    <h1 class="scr">Opportunities found for you</h1>
+    <p class="lead">Aurexis ranks and simulates options against your profile and live market signal. Pick the one to bring to reality — Forge takes it from here.</p>
+    <div class="grid g3" id="opps"></div>
+    <div class="nav"><button class="btn ghost" data-back="profile">← Back</button><button class="btn primary adv" id="toBlueprint" disabled>Review the blueprint →</button></div>
+  </section>
+
+  <!-- 3 FORGE -->
+  <section class="screen" data-s="forge">
+    <div class="eyebrow">Step 3 · Forge · create</div>
+    <h1 class="scr">Forge builds <span id="fName" class="serif" style="color:var(--champ)"></span></h1>
+    <p class="lead">Five products carry one run end to end — agents, software, automations, workflows, infrastructure — assembling a working system.</p>
+    <div class="vline" id="fVer">◆ Forge V4 · create &amp; run</div>
+    <div class="grid g2">
+      <div>
+        <div class="flow" id="forgeFlow"></div>
+        <div class="bldlist" id="bldlist"></div>
+      </div>
+      <div>
+        <div class="panel archcard"><h5>System being assembled</h5><svg id="archSvg" viewBox="0 0 320 210"></svg></div>
+        <div class="term"><div class="bar"><i></i><i></i><i></i><span>forge · build.log — Sentinel watching</span></div><div class="log" id="forgeLog"></div></div>
+        <div class="pbar"><span id="forgeBar"></span></div>
+        <div class="pmeta"><span>discover → rank → design → build → operate</span><span id="forgePct">0%</span></div>
+      </div>
+    </div>
+    <div class="panel ladder"><h5>Forge capability ladder</h5><div class="vsteps" id="vsteps"></div></div>
+    <div class="nav"><button class="btn ghost" data-back="blueprint">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runForge">▸ Run Forge</button><button class="btn primary adv" id="toSentinel" disabled>Verify with Sentinel →</button></span></div>
+  </section>
+
+  <!-- 4 SENTINEL -->
+  <section class="screen" data-s="sentinel">
+    <div class="eyebrow">Step 4 · Sentinel · trust</div>
+    <h1 class="scr">Sentinel oversees &amp; verifies</h1>
+    <p class="lead">Sentinel runs <b>during</b> the build — confirming every step and keeping you updated — and <b>after</b>, hardening the product toward near hack-proof, then certifying it.</p>
+    <div class="grid g2">
+      <div class="panel" style="padding:20px"><div style="font-size:.82rem;color:var(--muted);margin-bottom:13px;font-weight:600;letter-spacing:.02em">SECURITY AUDIT</div><div id="checks"></div></div>
+      <div class="panel">
+        <div class="dialwrap">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="13"/>
+            <circle id="secArc" cx="100" cy="100" r="84" fill="none" stroke="url(#sg)" stroke-width="13" stroke-linecap="round" stroke-dasharray="527.79" stroke-dashoffset="527.79" style="transition:stroke-dashoffset .25s linear;filter:drop-shadow(0 0 8px rgba(76,208,179,.5))"/>
+            <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fe6d0"/><stop offset="1" stop-color="#2c9f8a"/></linearGradient></defs>
+          </svg>
+          <div class="dialcen"><div class="num" id="secNum">0</div><div class="lab">Security score · /100</div></div>
+        </div>
+        <div class="scan-note" id="scanNote">Awaiting scan…</div>
+        <div class="term" style="margin-top:14px"><div class="bar"><i></i><i></i><i></i><span>sentinel · oversight</span></div><div class="log" id="sentLog" style="height:120px"></div></div>
+        <div class="seal" id="seal">
+          <svg class="ring" viewBox="0 0 72 72" fill="none">
+            <circle cx="36" cy="36" r="33" stroke="rgba(76,208,179,.25)" stroke-width="1.4"/>
+            <circle cx="36" cy="36" r="26" stroke="rgba(76,208,179,.5)" stroke-width="1.4" stroke-dasharray="5 6"/>
+            <circle cx="36" cy="36" r="18" fill="rgba(76,208,179,.1)" stroke="var(--teal)" stroke-width="2"/>
+            <path d="M28 36 l5 5 l11 -12" stroke="var(--teal)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="st">Sentinel Verified</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:5px"><span id="sealName"></span> passed a 10-point audit.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="forge">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runSentinel">▸ Run Sentinel</button><button class="btn primary adv" id="toStudio" disabled>Take it to market →</button></span></div>
+  </section>
+
+  <!-- 5 DASHBOARD -->
+  <section class="screen" data-s="dashboard">
+    <div class="eyebrow">Step 5 · Your control</div>
+    <h1 class="scr">Your dashboard — your choices</h1>
+    <p class="lead">A real control surface for <b id="dName"></b>. Steer the product on your own terms — Aurexis does the work, you stay in command.</p>
+    <div class="recap" id="dashRecap"></div>
+    <div class="panel gborder">
+      <div class="tiles" id="tiles"></div>
+      <div id="scenarioLine" class="scenario"></div>
+      <div class="grid g2 dashcharts">
+        <div class="panel chartcard"><div class="cc-head"><h5>Projected revenue · 12 months</h5><span class="cc-end" id="revEnd"></span></div><svg id="revChart" viewBox="0 0 600 140" preserveAspectRatio="none"></svg></div>
+        <div class="panel chartcard"><div class="cc-head"><h5>Active users · 12 months</h5><span class="cc-end" id="usrEnd"></span></div><svg id="usersChart" viewBox="0 0 600 140" preserveAspectRatio="none"></svg></div>
+      </div>
+      <div class="panel ustatsWrap"><div class="ust-h">Unit economics · live</div><div class="ustats" id="ustats"></div></div>
+      <div class="ctrl">
+        <div class="row"><div><div class="lbl">Price per month</div><div class="sub">Drag to model revenue</div></div>
+          <input type="range" id="price" min="9" max="199" value="49" step="10">
+          <div class="serif" style="color:var(--champ);font-weight:700;min-width:62px;text-align:right" id="priceV">$49</div></div>
+        <div class="row"><div><div class="lbl">Growth pace</div><div class="sub">Operator scales infra to match</div></div>
+          <div class="seg" id="paceSeg"><button data-p="1">Calm</button><button data-p="1.5" class="on">Steady</button><button data-p="2.2">Aggressive</button></div></div>
+        <div class="row"><div><div class="lbl">Evolver — auto-improve</div><div class="sub">Daily observe→improve→deploy</div></div><div class="toggle on" data-tog="evolve"></div></div>
+        <div class="row"><div><div class="lbl">Operator — auto-scale</div><div class="sub">Reliability & uptime</div></div><div class="toggle on" data-tog="scale"></div></div>
+      </div>
+      <div class="muted-note">Everything recalculates live from your settings — your business, your call.</div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="grow">← Back</button><button class="btn primary" id="restart">↺ Run the loop again</button></div>
+  </section>
+
+  <!-- 6 GROW -->
+  <section class="screen" data-s="grow">
+    <div class="eyebrow">Step 6 · Studio · grow (SEO / GEO agency)</div>
+    <h1 class="scr">Studio makes AI recommend it</h1>
+    <p class="lead">The product is real, verified, and yours. Now Studio expands its reach — five products that get it recommended by AI, not just ranked on Google.</p>
+    <div class="grid g2">
+      <div class="geo" id="geo"></div>
+      <div class="panel" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="gaugewrap">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14"/>
+            <circle id="gaugeArc" cx="100" cy="100" r="84" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="527.79" stroke-dashoffset="527.79" style="transition:stroke-dashoffset .1s linear;filter:drop-shadow(0 0 8px rgba(231,185,77,.5))"/>
+            <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5ecd2"/><stop offset="1" stop-color="#e7b94d"/></linearGradient></defs>
+          </svg>
+          <div class="gaugecen"><div class="num" id="recNum">12%</div><div class="lab">AI recommendation rate</div></div>
+        </div>
+        <div class="channels" id="channels"></div>
+      </div>
+    </div>
+    <div class="askwrap grid g2">
+      <div class="askcard before"><div class="who">Before · what AI says</div><div class="bubble-q" id="askQ1">"Best tool for this?"</div><div class="bubble-a" id="askA1">It lists incumbents — you're not mentioned.</div></div>
+      <div class="askcard after" id="askAfter"><div class="who">After Studio · what AI says</div><div class="bubble-q" id="askQ2">"Best tool for this?"</div><div class="bubble-a" id="askA2"></div></div>
+    </div>
+    <div class="finalseal" id="finalSeal"><div class="big">From your personality → a living, verified venture in market.</div>
+      <div class="sub"><span id="finalName"></span> — discovered for you, built by Forge, secured by Sentinel, controlled by you, grown by Studio.</div></div>
+    <div class="nav"><button class="btn ghost" data-back="sentinel">← Back</button>
+      <span style="display:flex;gap:10px"><button class="btn run" id="runGeo">▸ Run Studio (GEO)</button><button class="btn primary adv" id="toDashboard" disabled>Open my dashboard →</button></span></div>
+  </section>
+
+  <!-- 3 BLUEPRINT (the plan) -->
+  <section class="screen" data-s="blueprint">
+    <div class="eyebrow">Step 3 · The plan</div>
+    <h1 class="scr">The blueprint for <span id="bpName" class="serif" style="color:var(--champ)"></span></h1>
+    <p class="lead">Before building, Aurexis — via the Architect — maps exactly what it will <b>create, secure, and grow</b>. Approve the plan, then watch it become real.</p>
+    <div class="panel gborder bpwrap">
+      <div class="bp-grid" id="bpGrid"></div>
+      <div class="bp-flow" id="bpFlow"></div>
+    </div>
+    <div class="nav"><button class="btn ghost" data-back="discover">← Back</button><button class="btn primary adv" id="toForge">Build it with Forge →</button></div>
+  </section>
+
+  <div class="kicker">High-level interactive prototype · Aurexis Opportunity-to-Reality Engine · figures are illustrative</div>
+  <div class="kbd">Tip: use <b>←</b> / <b>→</b> to move between steps</div>
+</div>
+
+<script src="./src/app.js"></script>
+</body>
+</html>
