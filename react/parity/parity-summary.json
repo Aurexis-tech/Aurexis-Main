@@ -1,0 +1,86 @@
+{
+  "pass": true,
+  "threshold": 0.2,
+  "stages": [
+    {
+      "name": "1-intro",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 0,
+      "pct": 0
+    },
+    {
+      "name": "2-profile",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 102,
+      "pct": 0.0032196969696969696
+    },
+    {
+      "name": "3-discover",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 126,
+      "pct": 0.003977272727272728
+    },
+    {
+      "name": "4-blueprint",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 110,
+      "pct": 0.003472222222222222
+    },
+    {
+      "name": "5-forge",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 0,
+      "pct": 0
+    },
+    {
+      "name": "6-sentinel",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 129,
+      "pct": 0.004071969696969697
+    },
+    {
+      "name": "7-grow",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 0,
+      "pct": 0
+    },
+    {
+      "name": "8-dashboard",
+      "w": 1440,
+      "h": 2200,
+      "dimsMatch": true,
+      "baselineDims": "1440x2200",
+      "reactDims": "1440x2200",
+      "nDiff": 143,
+      "pct": 0.0045138888888888885
+    }
+  ]
+}
