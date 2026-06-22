@@ -10,3 +10,7 @@ dist/
 test-results/
 playwright-report/
 .cache/
+
+# Parity screenshots — ~30MB at 7 viewports × 8 stages, regenerable via
+# `npm run parity`. The committed evidence is parity/parity-summary.json.
+parity/*.png

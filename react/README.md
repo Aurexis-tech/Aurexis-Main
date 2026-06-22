@@ -84,10 +84,10 @@ react/
 │       ├── Intro.jsx  Profile.jsx  Discover.jsx  Blueprint.jsx
 │       └── Forge.jsx  Sentinel.jsx Dashboard.jsx Grow.jsx
 └── parity/                 # verification (see below)
-    ├── run-parity.mjs      # visual parity: per-stage screenshot diffs
+    ├── run-parity.mjs      # responsive visual parity: 7 viewports × 8 stages
     ├── behavior-check.mjs  # behavioural parity: driven interactions
-    ├── parity-summary.json # machine-readable result
-    └── {baseline,react,diff}-<stage>.png   # inspectable evidence
+    ├── parity-summary.json # committed result (per-viewport → per-stage + reflow)
+    └── {baseline,react,diff}-<width>-<stage>.png   # regenerable, git-ignored
 ```
 
 ## How to run
@@ -116,23 +116,40 @@ npm run parity                  # visual: 8-stage screenshot diff
 node parity/behavior-check.mjs  # behavioural: driven interaction compare
 ```
 
-**Visual parity** (`run-parity.mjs`) drives Intro → Profile → Discover →
-Blueprint → Forge → Sentinel → Studio/Grow → Dashboard at a fixed 1440-wide
-viewport (deviceScaleFactor 1), runs each animated sequence to completion, and
-pixel-diffs every stage. Screenshots + diff images are written to `parity/` so
-the comparison is inspectable. Latest run — every stage well under the 0.20%
-tolerance (residuals are sub-pixel text anti-aliasing):
+**Responsive visual parity** (`run-parity.mjs`) drives Intro → Profile →
+Discover → Blueprint → Forge → Sentinel → Studio/Grow → Dashboard and pixel-diffs
+every stage at **seven viewport widths** that straddle every CSS breakpoint
+(`styles.css` has `min-width` breakpoints at **560 / 700 / 720 / 760 / 820 px**).
+Each width is a fixed *tall* viewport (deviceScaleFactor 1) — never `fullPage`,
+which would resize mid-capture and re-rasterize the backdrop-filter panels +
+canvas into noise. Latest run — **every stage at every width passes** the 0.20%
+tolerance (max cell 0.0067%; residuals are sub-pixel text anti-aliasing):
 
-| Stage | Max pixel diff | Result |
-|-------|----------------|--------|
-| 1 · Intro | 0.0000% | PASS |
-| 2 · Profile | 0.0032% | PASS |
-| 3 · Discover | 0.0040% | PASS |
-| 4 · Blueprint | 0.0035% | PASS |
-| 5 · Forge | 0.0000% | PASS |
-| 6 · Sentinel | 0.0041% | PASS |
-| 7 · Studio / Grow | 0.0000% | PASS |
-| 8 · Dashboard | 0.0045% | PASS |
+| width | band | In | Pr | Di | Bp | Fo | Se | Gr | Da |
+|------:|------|---:|---:|---:|---:|---:|---:|---:|---:|
+| **375**  | mobile (<560)     | 0 | 0 | 0 | 0 | 0.0067 | 0 | 0 | 0 |
+| **600**  | 560–699           | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **710**  | 700–719           | 0 | 0 | 0 | 0 | 0 | 0.0011 | 0 | 0.0002 |
+| **740**  | 720–759           | 0 | 0 | 0 | 0 | 0.0030 | 0 | 0 | 0 |
+| **768**  | tablet (760–819)  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **1024** | small-lap (≥820)  | 0 | 0.0032 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **1440** | desktop (≥820)    | 0 | 0 | 0.0003 | 0 | 0 | 0 | 0 | 0 |
+
+(values are max pixel-diff %; `0` = 0.0000%. Stages: In·tro Pr·ofile Di·scover
+Bp·blueprint Fo·rge Se·ntinel Gr·ow Da·shboard.)
+
+The harness also proves the breakpoints genuinely fire — at each width it records
+`grid-template-columns` track counts and confirms they're **identical between
+baseline and React**, and that the layout truly reflows mobile→desktop (not "same
+because nothing moved"):
+
+| element | 375px (mobile) | 1440px (desktop) |
+|---------|:--------------:|:----------------:|
+| `#opps` (discover) | 1 col | 3 cols |
+| `.gp2` (profile)   | 1 col | 2 cols |
+| `#tiles` (dashboard) | 2 cols | 4 cols |
+| `#ustats` (dashboard) | 2 cols | 4 cols |
+| `#bpGrid` (blueprint) | 2 cols | 3 cols |
 
 **Behavioural parity** (`behavior-check.mjs`) asserts the two apps produce
 identical results for: keyboard nav (Enter starts; ←/→ move between steps), the
@@ -141,9 +158,11 @@ Studio sequences (security score `98`, AI rate `71%`), the dashboard recompute
 (price slider → `$199`, growth pace, Evolver/Operator toggles, the live scenario
 line), the back buttons, and the restart loop. Latest run: **PASS — identical**.
 
-> Note: `parity/` keeps the browser **out** of version control — Playwright's
-> Chromium lives in the global cache and `node_modules/` is git-ignored; only the
-> harness scripts and the (small) screenshot/diff PNGs are committed.
+> Note on evidence: at 7 viewports × 8 stages the screenshot set is ~30 MB, so the
+> PNGs are **git-ignored** (regenerable via `npm run parity`); the committed proof
+> is `parity/parity-summary.json` (per-viewport → per-stage max-diff % + the
+> reflow track counts). Playwright's Chromium lives in the global cache and
+> `node_modules/` is git-ignored too.
 
 ## Fidelity
 
