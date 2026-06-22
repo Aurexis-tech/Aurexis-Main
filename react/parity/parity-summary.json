@@ -95,8 +95,8 @@
         },
         {
           "stage": "5-forge",
-          "nDiff": 125,
-          "pct": 0.006666666666666667,
+          "nDiff": 0,
+          "pct": 0,
           "dimsMatch": true,
           "dims": "375x5000"
         },
@@ -116,13 +116,13 @@
         },
         {
           "stage": "8-dashboard",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 47,
+          "pct": 0.002506666666666667,
           "dimsMatch": true,
           "dims": "375x5000"
         }
       ],
-      "worst": 0.006666666666666667,
+      "worst": 0.002506666666666667,
       "pass": true
     },
     "600": {
@@ -180,8 +180,8 @@
         },
         {
           "stage": "5-forge",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 125,
+          "pct": 0.00496031746031746,
           "dimsMatch": true,
           "dims": "600x4200"
         },
@@ -207,7 +207,7 @@
           "dims": "600x4200"
         }
       ],
-      "worst": 0,
+      "worst": 0.00496031746031746,
       "pass": true
     },
     "710": {
@@ -272,27 +272,27 @@
         },
         {
           "stage": "6-sentinel",
-          "nDiff": 28,
-          "pct": 0.0010954616588419405,
-          "dimsMatch": true,
-          "dims": "710x3600"
-        },
-        {
-          "stage": "7-grow",
           "nDiff": 0,
           "pct": 0,
           "dimsMatch": true,
           "dims": "710x3600"
         },
         {
+          "stage": "7-grow",
+          "nDiff": 5,
+          "pct": 0.00019561815336463224,
+          "dimsMatch": true,
+          "dims": "710x3600"
+        },
+        {
           "stage": "8-dashboard",
-          "nDiff": 4,
-          "pct": 0.0001564945226917058,
+          "nDiff": 0,
+          "pct": 0,
           "dimsMatch": true,
           "dims": "710x3600"
         }
       ],
-      "worst": 0.0010954616588419405,
+      "worst": 0.00019561815336463224,
       "pass": true
     },
     "740": {
@@ -350,8 +350,8 @@
         },
         {
           "stage": "5-forge",
-          "nDiff": 79,
-          "pct": 0.0029654654654654657,
+          "nDiff": 0,
+          "pct": 0,
           "dimsMatch": true,
           "dims": "740x3600"
         },
@@ -377,7 +377,7 @@
           "dims": "740x3600"
         }
       ],
-      "worst": 0.0029654654654654657,
+      "worst": 0,
       "pass": true
     },
     "768": {
@@ -435,8 +435,8 @@
         },
         {
           "stage": "5-forge",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 146,
+          "pct": 0.005940755208333334,
           "dimsMatch": true,
           "dims": "768x3200"
         },
@@ -462,7 +462,7 @@
           "dims": "768x3200"
         }
       ],
-      "worst": 0,
+      "worst": 0.005940755208333334,
       "pass": true
     },
     "1024": {
@@ -499,8 +499,8 @@
         },
         {
           "stage": "2-profile",
-          "nDiff": 92,
-          "pct": 0.003208705357142857,
+          "nDiff": 0,
+          "pct": 0,
           "dimsMatch": true,
           "dims": "1024x2800"
         },
@@ -547,7 +547,7 @@
           "dims": "1024x2800"
         }
       ],
-      "worst": 0.003208705357142857,
+      "worst": 0,
       "pass": true
     },
     "1440": {
@@ -584,15 +584,15 @@
         },
         {
           "stage": "2-profile",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 85,
+          "pct": 0.002459490740740741,
           "dimsMatch": true,
           "dims": "1440x2400"
         },
         {
           "stage": "3-discover",
-          "nDiff": 10,
-          "pct": 0.00028935185185185184,
+          "nDiff": 0,
+          "pct": 0,
           "dimsMatch": true,
           "dims": "1440x2400"
         },
@@ -605,15 +605,15 @@
         },
         {
           "stage": "5-forge",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 120,
+          "pct": 0.003472222222222222,
           "dimsMatch": true,
           "dims": "1440x2400"
         },
         {
           "stage": "6-sentinel",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 28,
+          "pct": 0.0008101851851851852,
           "dimsMatch": true,
           "dims": "1440x2400"
         },
@@ -626,13 +626,13 @@
         },
         {
           "stage": "8-dashboard",
-          "nDiff": 0,
-          "pct": 0,
+          "nDiff": 15,
+          "pct": 0.00043402777777777775,
           "dimsMatch": true,
           "dims": "1440x2400"
         }
       ],
-      "worst": 0.00028935185185185184,
+      "worst": 0.003472222222222222,
       "pass": true
     }
   }
