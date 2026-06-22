@@ -1,7 +1,7 @@
 // Framework-neutral logic ported verbatim from the baseline app.js. Behavior is
 // unchanged. `model()` reads live control values from the DOM exactly as the
 // original did (it is "pure" only in the sense of holding no React state).
-import { DKIT, FOCUS_KW, FQ_A, FB, FQ_C } from './data.js'
+import { DKIT, FOCUS_KW, FQ_A, FB, FQ_C, LIB, MKT } from './data.js'
 import { $ } from './dom.js'
 import { state } from './state.js'
 
@@ -55,6 +55,41 @@ export function sparkPts(slope){ // rising mini-series, steeper with pace/growth
   const N=7,out=[]; for(let i=0;i<=N;i++){ const t=i/N;
     let v=t*(.35+slope*.6)+(i%2?.05:-.03); v=Math.max(0,Math.min(1,v));
     out.push((i*42/N).toFixed(1)+","+(16-v*13).toFixed(1)); } return out.join(" "); }
+
+// Opportunity scoring/derivation, extracted verbatim from the engine's
+// computeOpps() (the pure part). Returns the sorted opps array; the caller
+// assigns state.opps. Output is byte-identical to the original (same Math.random
+// usage, same helpers from data.js/logic.js). No reword, no recompute.
+export function computeOpps(s){
+  const a=s.answers, pool=LIB[a.domain]||genOpps(a.domain);
+  const focuses=Object.values(s.follow||{});
+  return pool.map(o=>{let fit=80;for(const k in o.bias){if(a[k]===o.bias[k])fit+=6;}
+    if(a.risk==="Bold"||a.risk==="All-in")fit+=2; if(a.risk==="Cautious")fit-=1;
+    if(a.time==="Full-time"||a.time==="Full-time + team")fit+=2; if(a.time==="Side hustle"||a.time==="Weekends only")fit-=2;
+    let fb=0; focuses.forEach(f=>{ if(focusMatch(o,f)) fb+=3; }); fit+=Math.min(fb,9);
+    fit+=Math.floor(Math.random()*3); fit=Math.max(71,Math.min(97,fit));
+    const hsh=hashStr(o.t); const market=MKT[hsh%MKT.length]; const diff=["Low","Medium","Medium","High"][o.b.length%4]; const ttr=(hsh%4)+2;
+    return Object.assign({},o,{fit,market,diff,ttr,prof:Math.min(98,fit+ (hsh%5)), mkt:60+(hsh%35), feas:Math.max(45,100-o.b.length*8-(hsh%10))});
+  }).sort((x,y)=>y.fit-x.fit);
+}
+
+// Blueprint screen data, derived from shared state — mirrors the strings/order
+// the engine's initBlueprint() used verbatim (now the single source of truth for
+// the declarative Blueprint component). No reword, no recompute.
+export function blueprintModel(s){
+  const a=s.answers, o=s.chosen;
+  return {
+    name:o.t,
+    items:[
+      ["Your profile",s.profileLabel,`${a.style} · ${a.time}`],
+      ["The opportunity",o.t,`${a.domain} · ${o.fit}% fit · ~${o.ttr} mo to revenue`],
+      ["Forge will build",o.b.length+" systems",o.b.join(" · ")],
+      ["Sentinel will secure","10-point audit","Hardened toward near hack-proof"],
+      ["You will control","A live dashboard","Pricing, scale & quality — your settings"],
+      ["Studio will grow","AI recommendation","Across ChatGPT, Claude, Gemini & more"],
+    ],
+  };
+}
 
 export function model(){
   const price=+$("#price").value, p=state.pace;

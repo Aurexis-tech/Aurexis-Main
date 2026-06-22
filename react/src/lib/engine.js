@@ -5,8 +5,9 @@
 // renders the markup + empty containers; this code owns all the dynamic DOM.
 import { RM, $, $$, wait, GC } from './dom.js'
 import { STEPS, state } from './state.js'
-import { QS, NOUN, TRAITS, FOCUS_ADJ, LIB, MKT, FPROD, VERS, CHECKS, OVERSIGHT, GEO, CHN } from './data.js'
-import { traitScores, radarPoint, hashStr, focusMatch, genOpps, pickFollowups, fmtUSD, sparkPts, model } from './logic.js'
+import { QS, NOUN, TRAITS, FOCUS_ADJ, FPROD, VERS, CHECKS, OVERSIGHT, GEO, CHN } from './data.js'
+import { traitScores, radarPoint, pickFollowups, fmtUSD, sparkPts, model, computeOpps } from './logic.js'
+import { notifyScreen } from './bridge.js'
 
 /* ===== background constellation ===== */
 function initBg(){
@@ -44,16 +45,6 @@ function typeText(el,txt,onDone){
   (function step(){ if(tok!==_typeTok) return; el.textContent=txt.slice(0,i++);
     if(i<=txt.length){ setTimeout(step,16);} else if(onDone) onDone(); })();
 }
-function countUp(el,to){ if(!el) return; if(RM){ el.textContent=to+"%"; return; }
-  const t0=performance.now(),dur=700; (function f(t){ const p=Math.min(1,(t-t0)/dur);
-    el.textContent=Math.round(to*(1-Math.pow(1-p,3)))+"%"; if(p<1) requestAnimationFrame(f); else el.textContent=to+"%"; })(t0); }
-function enterCards(){ if(RM) return; const cards=Array.prototype.slice.call(document.querySelectorAll("#opps .opp"));
-  cards.forEach((c,i)=>{ c.classList.add("enter"); const d=60+i*90;
-    setTimeout(()=>c.classList.add("show"),d); setTimeout(()=>{c.classList.remove("enter");c.classList.remove("show");},d+650); }); }
-function attachTilt(){ if(RM) return; Array.prototype.slice.call(document.querySelectorAll("#opps .opp")).forEach(c=>{
-  c.addEventListener("mousemove",e=>{ const r=c.getBoundingClientRect(); const dx=(e.clientX-r.left)/r.width-.5,dy=(e.clientY-r.top)/r.height-.5;
-    c.style.transform="perspective(700px) rotateX("+(-dy*6)+"deg) rotateY("+(dx*6)+"deg) translateY(-4px)"; });
-  c.addEventListener("mouseleave",()=>{ c.style.transform=""; }); }); }
 function fireBurst(){ if(RM) return; const cv=document.createElement("canvas");
   cv.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:35"; document.body.appendChild(cv);
   const ctx=cv.getContext("2d"),dpr=Math.min(2,window.devicePixelRatio||1); cv.width=window.innerWidth*dpr; cv.height=window.innerHeight*dpr; ctx.scale(dpr,dpr);
@@ -134,33 +125,11 @@ function afterProfile(){
 }
 
 /* ===== 2 opportunities ===== */
-function computeOpps(){
-  const a=state.answers, pool=LIB[a.domain]||genOpps(a.domain);
-  const focuses=Object.values(state.follow||{});
-  state.opps=pool.map(o=>{let fit=80;for(const k in o.bias){if(a[k]===o.bias[k])fit+=6;}
-    if(a.risk==="Bold"||a.risk==="All-in")fit+=2; if(a.risk==="Cautious")fit-=1;
-    if(a.time==="Full-time"||a.time==="Full-time + team")fit+=2; if(a.time==="Side hustle"||a.time==="Weekends only")fit-=2;
-    let fb=0; focuses.forEach(f=>{ if(focusMatch(o,f)) fb+=3; }); fit+=Math.min(fb,9);
-    fit+=Math.floor(Math.random()*3); fit=Math.max(71,Math.min(97,fit));
-    const hsh=hashStr(o.t); const market=MKT[hsh%MKT.length]; const diff=["Low","Medium","Medium","High"][o.b.length%4]; const ttr=(hsh%4)+2;
-    return Object.assign({},o,{fit,market,diff,ttr,prof:Math.min(98,fit+ (hsh%5)), mkt:60+(hsh%35), feas:Math.max(45,100-o.b.length*8-(hsh%10))});
-  }).sort((x,y)=>y.fit-x.fit);
-  const why=o=>{const b=[];for(const k in o.bias){if(a[k]===o.bias[k])b.push(a[k].toLowerCase());}b.push(a.domain.toLowerCase());return b.slice(0,2).join(" + ");};
-  $("#opps").innerHTML=state.opps.map((o,i)=>`<div class="opp" data-i="${i}"><div class="fit" data-fit="${o.fit}">0%</div>
-    <h3>${o.t}</h3><div class="tag">${o.g}</div>
-    <div class="meta"><div><b>${o.market}</b>market (est.)</div><div><b>${o.diff}</b>difficulty</div><div><b>~${o.ttr} mo</b>to revenue</div></div>
-    <div class="breakdown">
-      <div class="br"><span class="t">Profile fit</span><span class="bar"><i style="width:${o.prof}%"></i></span></div>
-      <div class="br"><span class="t">Market signal</span><span class="bar"><i style="width:${o.mkt}%"></i></span></div>
-      <div class="br"><span class="t">Build ease</span><span class="bar"><i style="width:${o.feas}%"></i></span></div>
-    </div>
-    <div class="blds"><b style="color:var(--muted)">Forge will build:</b> ${o.b.join(" · ")}</div>
-    <div class="pick">Select to build →</div></div>`).join("");
-  $$('#opps .opp').forEach(el=>el.onclick=()=>{$$('#opps .opp').forEach(x=>{x.classList.remove("sel");x.classList.remove("gborder");});
-    el.classList.add("sel");el.classList.add("gborder"); state.chosen=state.opps[+el.dataset.i]; $("#toBlueprint").disabled=false;});
-  $$('#opps .fit').forEach(el=>countUp(el,+el.dataset.fit));
-  enterCards(); attachTilt();
-}
+/* Discover is now a declarative React component (screens/Discover.jsx). The pure
+   scoring lives in logic.computeOpps(state); the engine only computes state.opps
+   then signals entry via notifyScreen("discover") in the wiring below. The card
+   markup, selection wiring, count-up, entry stagger and tilt are owned by the
+   component (reusing lib/anim.js verbatim). The engine no longer writes #opps. */
 
 /* ===== 3 forge ===== */
 function buildLadder(){ $("#vsteps").innerHTML=VERS.map((v,i)=>`<div class="vstep ${i<3?'done':''} ${i===3?'cur':''}"><div class="v">${v[0]}</div><div class="d">${v[1]}</div></div>`).join(""); }
@@ -316,20 +285,10 @@ function animateRec(from,to){return new Promise(res=>{ if(RM){$("#recNum").textC
     $("#recNum").textContent=v+"%";setArc(v); p<1?requestAnimationFrame(f):res();})(t0);});}
 
 /* ===== 7 blueprint ===== */
-function initBlueprint(){
-  const a=state.answers, o=state.chosen;
-  $("#bpName").textContent=o.t;
-  const items=[
-    ["Your profile",state.profileLabel,`${a.style} · ${a.time}`],
-    ["The opportunity",o.t,`${a.domain} · ${o.fit}% fit · ~${o.ttr} mo to revenue`],
-    ["Forge will build",o.b.length+" systems",o.b.join(" · ")],
-    ["Sentinel will secure","10-point audit","Hardened toward near hack-proof"],
-    ["You will control","A live dashboard","Pricing, scale & quality — your settings"],
-    ["Studio will grow","AI recommendation","Across ChatGPT, Claude, Gemini & more"],
-  ];
-  $("#bpGrid").innerHTML=items.map(it=>`<div class="bp-item"><div class="k">${it[0]}</div><div class="val">${it[1]}</div><div class="vsub">${it[2]}</div></div>`).join("");
-  $("#bpFlow").innerHTML=`Next: <b>Forge</b> builds → <b>Sentinel</b> verifies → <b>you</b> control → <b>Studio</b> grows. Approve the plan to begin.`;
-}
+/* Blueprint is now a declarative React component (screens/Blueprint.jsx) deriving
+   its content from blueprintModel(state). The engine no longer writes #bpName /
+   #bpGrid / #bpFlow — it only signals entry via notifyScreen("blueprint") in the
+   wiring below so React renders the current shared state. */
 
 /* ===== wiring ===== */
 let _booted=false;
@@ -338,8 +297,8 @@ export function boot(){
   initBg();
   renderStepper(); renderQuestions();
   $("#begin").onclick=()=>{ $("#intro").classList.add("gone"); };
-  $("#toDiscover").onclick=()=>{computeOpps();go("discover");};
-  $("#toBlueprint").onclick=()=>{initBlueprint();go("blueprint");};
+  $("#toDiscover").onclick=()=>{state.opps=computeOpps(state);notifyScreen("discover");go("discover");};
+  $("#toBlueprint").onclick=()=>{notifyScreen("blueprint");go("blueprint");};
   $("#toForge").onclick=()=>{initForge();go("forge");};
   $("#runForge").onclick=runForge;
   $("#toSentinel").onclick=()=>{initSentinel();go("sentinel");};
