@@ -115,6 +115,23 @@ original:
 e4d359e53e2c1453e93d7544a7109c034becb02fd227382eeddba50be4482ac1
 ```
 
+## Provenance
+
+The authoritative original is kept in the repo at
+[`reference/Aurexis_Engine_Prototype_8.html`](reference/Aurexis_Engine_Prototype_8.html)
+— so the fidelity proof is self-contained and no longer depends on any file
+outside version control. The split in `index.html` + `src/` reproduces that
+reference byte-for-byte, with SHA-256:
+
+```
+e4d359e53e2c1453e93d7544a7109c034becb02fd227382eeddba50be4482ac1
+```
+
+A `.gitattributes` rule pins LF line endings on checkout (this host has
+`core.autocrlf=true`), so the hash holds on every clone and checkout regardless
+of platform. The reference file is committed but never built or served — it is
+the locked source of truth for verification only.
+
 ## Next phases (optional)
 
 - **React componentization** — break each step (Intro, Profile, Discover,
