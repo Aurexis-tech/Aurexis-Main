@@ -75,7 +75,9 @@ create policy "sessions owner delete" on public.sessions
 
 -- ── updated_at maintenance ───────────────────────────────────────────────────
 create or replace function public.set_updated_at()
-  returns trigger language plpgsql as $$
+  returns trigger language plpgsql
+  set search_path = ''   -- pinned: now() resolves via implicit pg_catalog (linter 0011)
+  as $$
 begin
   new.updated_at = now();
   return new;
