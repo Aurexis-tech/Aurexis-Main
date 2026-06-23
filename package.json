@@ -8,6 +8,10 @@
     "preview": "vite preview",
     "serve": "npx --yes serve ."
   },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "@supabase/supabase-js": "^2.108.2"
+  },
   "devDependencies": {
     "vite": "^5"
   }

@@ -7,7 +7,13 @@ import react from '@vitejs/plugin-react'
 // cssMinify is off so the shipped CSS stays a faithful copy of the source.
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    // Dev-only: forward /api/* to the Vercel functions running via `vercel dev`
+    // (repo root, :3000). Lets the hidden /dev-check page call /api with relative
+    // paths and no CORS. No effect on the prototype or the production build.
+    proxy: { '/api': 'http://localhost:3000' },
+  },
   preview: { port: 4173 },
   build: { outDir: 'dist', cssMinify: false },
 })
