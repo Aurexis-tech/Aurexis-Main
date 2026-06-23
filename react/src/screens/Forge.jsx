@@ -11,7 +11,12 @@ import { useEffect, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import { state } from '../lib/state.js'
 import { subscribeScreen } from '../lib/bridge.js'
-import { postForge } from '../lib/api.js'
+import { postForge, BACKEND_CONFIGURED } from '../lib/api.js'
+
+// On a deploy with no pipeline backend wired in (VITE_API_BASE unset), Forge is an
+// honest interface PREVIEW: the stages are explorable but running is disabled — we
+// never fire calls that would time out or spin forever, and never fake results.
+const PREVIEW = !BACKEND_CONFIGURED
 
 const STAGES = [
   { key: 'scout', n: 'Scout', d: 'Searches the live web for current market signals and ranks real opportunities to investigate.' },
@@ -241,6 +246,7 @@ export default function Forge() {
   const [picked, setPicked] = useState(null)     // chosen Scout opportunity index
   const [sel, setSel] = useState(0)              // Creator file viewer index
   const [running, setRunning] = useState(null)   // currently-running stage key
+  const [netFail, setNetFail] = useState(false)  // a call hit the backend & it was unreachable
   const [, force] = useState(0)
   const pickedRef = useRef(null)
 
@@ -270,6 +276,7 @@ export default function Forge() {
       setStatus((s) => ({ ...s, [stage]: 'failed' }))
       setErrors((e) => ({ ...e, [stage]: err.message }))
       setElapsed((e) => ({ ...e, [stage]: (performance.now() - t0) / 1000 }))
+      if (err && err.status === 0) setNetFail(true) // backend unreachable / timed out
       setRunning(null)
       throw err
     }
@@ -368,6 +375,14 @@ export default function Forge() {
     }
     // idle
     if (stage === 'scout') {
+      if (PREVIEW) {
+        return (
+          <div className="fpending fidle">
+            <button className="btn run" disabled>▸ Run the Forge pipeline</button>
+            <div className="fmeta">Preview only on this deployment — the live pipeline backend isn't connected. (Set <code>VITE_API_BASE</code> to a running backend to execute.)</div>
+          </div>
+        )
+      }
       return (
         <div className="fpending fidle">
           <button className="btn run" onClick={runScout}>▸ Run the Forge pipeline</button>
@@ -384,6 +399,11 @@ export default function Forge() {
       <div className="eyebrow">Step 3 · Forge · create</div>
       <h1 className="scr">Forge {domain ? <>for <span className="serif" style={{ color: 'var(--champ)' }}>{domain}</span></> : 'a starter, stage by stage'}</h1>
       <p className="lead">Forge runs a real <b>five-stage pipeline</b> — each stage is a live AI call whose output feeds the next: discover opportunities, design a blueprint, generate a runnable starter, then plan operations and an improvement roadmap. Every artifact is for you to review — not a running business.</p>
+      {(PREVIEW || netFail) && (
+        <div className="fpreviewnote">
+          <b>Preview of the interface.</b> Forge's live 5-stage pipeline runs on a dedicated backend that isn't connected to this deployment yet. You can explore every stage's layout below; actually running it requires that backend (wired via <code>VITE_API_BASE</code>). Nothing here is faked or simulated.
+        </div>
+      )}
       <div className="fcostnote">Running the full pipeline makes real AI calls (~<b>$0.50–0.65</b> — Scout's live web search dominates). It is one request per stage; Scout can take ~90&nbsp;seconds.</div>
 
       <div className="fpipe">

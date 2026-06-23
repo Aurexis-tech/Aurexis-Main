@@ -10,23 +10,42 @@ const BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '')
 
 export const API_BASE = BASE
 
+// Is a dedicated pipeline backend wired in at build time? On the static aurexis-main
+// deploy VITE_API_BASE is unset → the UI shows an honest "backend not connected"
+// preview instead of firing calls that would time out. Setting VITE_API_BASE to a
+// running backend later flips this to a live run with NO other code change.
+export const BACKEND_CONFIGURED = !!import.meta.env.VITE_API_BASE
+
+// Hard client-side ceiling so a hung backend never produces an infinite spinner.
+// Set well above the legitimate worst-case stage (Scout's web search can run ~90s,
+// and a stage has occasionally reached ~3min) so it never aborts a real call — it
+// only catches a truly stuck backend, degrading honestly instead of spinning.
+const TIMEOUT_MS = 240000
+
 // POST one Forge stage and return its parsed JSON. Throws an Error (with .status)
-// on a transport error or any non-ok / { ok:false } response — callers catch this
-// to render a per-stage failure + Retry.
+// on a transport error / timeout (status 0) or any non-ok / { ok:false } response —
+// callers catch this to render a per-stage failure + Retry, never a crash/hang.
 export async function postForge(stage, body, { signal } = {}) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
+  if (signal) { if (signal.aborted) ctrl.abort(); else signal.addEventListener('abort', () => ctrl.abort()) }
   let res
   try {
     res = await fetch(`${BASE}/forge/${stage}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
-      signal,
+      signal: ctrl.signal,
     })
   } catch (e) {
-    const err = new Error('Could not reach the Forge service (is the API running?).')
-    err.status = 0
+    clearTimeout(timer)
+    const err = new Error(ctrl.signal.aborted
+      ? 'The Forge backend did not respond in time.'
+      : 'Could not reach the Forge backend.')
+    err.status = 0 // transport-level: unreachable / timed out
     throw err
   }
+  clearTimeout(timer)
   let data = null
   try { data = await res.json() } catch { /* non-JSON */ }
   if (!res.ok || !data || data.ok !== true) {

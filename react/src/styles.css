@@ -308,6 +308,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 /* ===== Forge real pipeline (additive, scoped — does not affect other screens) ===== */
 .fcostnote{font-size:.8rem;color:var(--muted);background:rgba(231,185,77,.06);border:1px solid var(--line);border-radius:12px;padding:9px 13px;margin:4px 0 16px}
+.fpreviewnote{font-size:.84rem;color:var(--ink);line-height:1.5;background:rgba(154,140,255,.08);border:1px solid rgba(154,140,255,.35);border-radius:12px;padding:11px 14px;margin:6px 0 10px}
+.fpreviewnote b{color:var(--violet)}
+.fpreviewnote code{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.82em;color:var(--amber2)}
+.fmeta code{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.92em;color:var(--amber2)}
 .fpipe{display:flex;flex-direction:column;gap:14px}
 .fstage{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:16px 18px;transition:.3s}
 .fstage.st-running{border-color:rgba(76,208,179,.5)}
