@@ -43,32 +43,33 @@ No secret is ever in the client — `/api/forge/*` are server-side (they hold
 `ANTHROPIC_API_KEY`); the browser only POSTs to the relative/based URL. `dist/` is
 grepped clean of keys/SDK on every build.
 
-## vercel.json review (read, not changed)
+## vercel.json (configured to build & serve the React UI)
 
-The repo-root `vercel.json` is **no-build static**:
+The repo-root `vercel.json` builds the **React app** and serves its static output:
 
 ```json
-{ "framework": null, "buildCommand": null, "outputDirectory": "." }
+{
+  "framework": null,
+  "installCommand": "cd react && npm install",
+  "buildCommand": "cd react && npm run build",
+  "outputDirectory": "react/dist"
+}
 ```
 
-**What it actually serves:** the **byte-exact single-file baseline** at repo-root
-`index.html` (+ `src/`) — the original prototype with the *simulated* engine — **plus**
-the repo-root `/api/*` serverless functions. Its own comment notes: *"The React app
-under ./react is a SEPARATE Vercel project and ignores this file."*
+> **History:** the first version was *no-build static* (`outputDirectory: "."`),
+> which served the **single-file baseline** (the *simulated* prototype), not the
+> React Forge UI — and it carried an invalid `"comment"` key that **failed Vercel's
+> schema** ("should NOT have additional property `comment`"). Both are fixed: the
+> `comment` is gone and the config now builds `react/` → `react/dist`, so aurexis-main
+> serves the real client-orchestrated Forge UI. Root Directory can stay at the repo
+> root (this `vercel.json` drives the build).
 
-**Important topology note (flag for reconciliation):** that root config does **not**
-serve the **React** build, so it does **not** carry the new client-orchestrated Forge
-UI — that lives in the **React app under `react/`** (Vite build → `react/dist`). To
-put the real Forge UI on aurexis-main, the Vercel project must build & serve the
-React app (see steps below), not the root single-file baseline. The root `vercel.json`
-is left untouched here.
-
-**The `/api/forge/*` functions** stay in the repo (they move to the external backend
-later — do not delete them). If the root project keeps deploying them, they will
-exist but **must not be relied on** at runtime on Hobby: a call would 504 at 60s. The
-UI's honest-degrade path means a static React deploy that can't reach a working
-pipeline simply shows the preview — so leaving the functions deployed is harmless to
-the UX, just unused.
+**`/api` is excluded from this deploy** via `.vercelignore`. Those pipeline functions
+are ~75–120s AI calls and **Hobby caps functions at 60s**, so they'd time out (and
+the set risks Hobby's function-count limit). They stay in the repo and **move to an
+always-on backend** later; the UI reaches them via `VITE_API_BASE` with no code
+change. With `/api` absent, the deploy is **purely static** — the Forge screen runs
+in **honest-preview** mode (`VITE_API_BASE` unset). Do not delete the `/api` sources.
 
 The **experimental `forge` Vercel project** from an earlier session is **unrelated to
 this work and untouched.**
@@ -81,13 +82,11 @@ cd "D:/Aurexis/Main Aurexis/aurexis"
 git push origin main            # remote: Aurexis-tech/Aurexis-Main
 
 # 2. aurexis-main (Hobby) — serve the STATIC React UI (honest preview, no backend)
-#    In the Vercel project settings for aurexis-main:
-#      - Root Directory:     react
-#      - Framework Preset:   Vite
-#      - Build Command:      npm run build      (outputs react/dist)
-#      - Output Directory:   dist
-#      - Environment:        leave VITE_API_BASE UNSET  → Forge shows the honest preview
-#    Then trigger a deploy (push to main, or `vercel --prod` from ./react once linked).
+#    The repo-root vercel.json + .vercelignore already do this:
+#      - builds react/ (Vite) → serves react/dist
+#      - excludes /api (functions would exceed Hobby's 60s limit)
+#      - leave VITE_API_BASE UNSET in the project env → Forge shows the honest preview
+#    Pushing main triggers the deploy (or click Redeploy on the failed build).
 
 # 3. LATER — stand up the pipeline backend on an always-on host
 #      - Deploy the /api/forge/* handlers (Node) to Railway/Render with

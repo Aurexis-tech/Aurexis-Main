@@ -1,0 +1,7 @@
+# This Vercel project (aurexis-main, Hobby) deploys ONLY the static React UI —
+# the whole prototype incl. the Forge screen in honest-preview mode. The /api
+# pipeline functions are intentionally NOT deployed here: each Forge stage is a
+# ~75-120s AI call and Hobby caps functions at 60s, so they would time out. They
+# move to an always-on backend (Railway/Render); the UI flips to live via
+# VITE_API_BASE with no code change. See docs/DEPLOY.md.
+/api
