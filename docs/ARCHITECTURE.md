@@ -101,34 +101,48 @@ Forge is a chained pipeline; each stage consumes the prior stage's output and
 returns a **real AI-generated artifact for a human to review** — never an
 autonomous actor, never a guarantee. All stages share `/api/_lib/forge.js`
 (`generateStructured` + caps + repair + web_search), so each stage is mostly
-"schema + prompt". The chained type contracts (`ScoutInput → OpportunityReport →
-Blueprint → Scaffold → OpsPlan → ImprovementPlan`) are defined as JSDoc/`typedef`
-at the top of `/api/_lib/forge.js` and as the exported `PIPELINE` array.
+"schema + prompt". `generateStructured` has two output modes: **strict-JSON text**
+(plain data; supports web_search) and **forced tool-use** (`outputTool`) — the
+latter is required for code-emitting stages because the SDK returns the tool's
+parsed `input`, so embedded code/quotes/newlines can never break JSON parsing (the
+classic "LLM JSON with embedded code" failure). The chained type contracts
+(`ScoutInput → OpportunityReport → Blueprint → Scaffold → OpsPlan →
+ImprovementPlan`) are defined as JSDoc/`typedef` at the top of `/api/_lib/forge.js`
+and as the exported `PIPELINE` array.
 
 | Endpoint | Method | Purpose | Secrets used |
 |----------|--------|---------|--------------|
 | `/api/forge/scout` | POST | **Stage 1 — Scout.** Claude + server-side **web_search** gather current market/trend/competition signals, then return a ranked **Opportunity Report** (3–6 opportunities with market-potential/competition/timing/entry/risks, plus real `sources[]` and an honest `disclaimer`). Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
 | `/api/forge/architect` | POST | **Stage 2 — Architect.** Consumes ONE chosen opportunity from Scout's report (+ profile/domain) and returns a **Reality Blueprint**: five coherent models — `businessModel`, `productModel`, `systemModel`, `growthModel`, `infrastructureModel` — plus `keyRisks` and an honest `disclaimer`. **web_search OFF** (design step over already-scouted data; the path to enable it exists but is off), so it is much cheaper than Scout. Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/creator` | POST | **Stage 3 — Creator.** Consumes the Reality Blueprint and generates a SMALL, COHERENT, **runnable** starter project for the single most central piece of the `systemModel`. Output: `summary`, `stack`, `runInstructions`, `files[]` (4–10), `whatsRealVsStub` (honesty surface), `nextSteps`, honest `disclaimer`. Uses **forced tool-use** (files contain real code). Prompted to be runnable with **no secrets** (external services mocked) and minimal setup. Byte caps server-side (≤8 KB/file, ≤90 KB total, ≤10 files, `truncated` flag); web_search OFF. | `ANTHROPIC_API_KEY` (server) |
 
 Honest scope: the Opportunity Report is an **AI-generated report to investigate**
-(not a guarantee a real gap exists), and the Reality Blueprint is an **AI-generated
-design to evaluate** (not "the future reality" as fact, not a guarantee it will
-work). Input contract: Architect's request body **is** one `opportunity` object
-exactly as Scout emits it, plus `domain`/`profile`. Stages 3–5 (Creator → Operator
-→ Evolver) are sketched in `_lib/forge.js` and arrive in later prompts.
+(not a guarantee a real gap exists), the Reality Blueprint is an **AI-generated
+design to evaluate** (not "the future reality" as fact), and the Creator output is
+**a real starter project you can build from** — a local-runnable skeleton, **NOT** a
+running business, **NOT** deployed infrastructure, and not production-ready/secure.
+The blueprint's `infrastructureModel` describes the *intended* production infra;
+the scaffold is a *local* starter — a deliberate, stated distinction. Input
+contracts chain exactly: Architect's body is one Scout `opportunity`; Creator's body
+is `{ blueprint }` (one Architect output). Stages 4–5 (Operator → Evolver) are
+sketched in `_lib/forge.js` and arrive in later prompts.
 
-> **Verification status — Forge endpoints.** `/api/forge/scout` and
-> `/api/forge/architect` are verified **via the local function harness only**
-> (real keys, real Claude calls). Scout: HTTP 200, 6 opportunities within caps, 8
-> real source URLs, disclaimer present, no key leak; repair-retry + 2-call guard
-> unit-tested. Architect: verified **chained** — a real Scout opportunity (#0) was
-> fed straight into Architect → HTTP 200, all five models substantive and within
-> caps, disclaimer present, no key leak (and ~50× cheaper input than Scout since
-> web_search is off). **`vercel dev` and any deploy remain UNPROVEN** for these
-> endpoints (account mismatch + no static-project link — see
-> `docs/NEXT_SESSION.md`) and **must be verified before deploy.** The harness mounts
-> the nested `/api/forge/*` routes explicitly; Vercel resolves them from the file
-> path natively, so no production routing change is needed.
+> **Verification status — Forge endpoints.** `/api/forge/scout`,
+> `/api/forge/architect`, and `/api/forge/creator` are verified **via the local
+> function harness only** (real keys, real Claude calls). Scout: HTTP 200, 6
+> opportunities within caps, 8 real source URLs, disclaimer present, no key leak;
+> repair-retry + 2-call guard unit-tested. Architect: verified **chained** from a
+> real Scout opportunity → all five models substantive and within caps. Creator:
+> verified across the **full Scout → Architect → Creator chain** with real data,
+> and the generated starter was **actually run** — its files were written to a
+> scratch dir *outside the repo*, `node server.js` booted with zero dependencies,
+> `GET /` served the UI, `POST /api/generate-dispute` returned a real (mock-data)
+> dispute package, and a headless browser rendered the UI and submitted the form
+> with **0 console errors** (PASS on "does it run"). **`vercel dev` and any deploy
+> remain UNPROVEN** for these endpoints (account mismatch + no static-project link —
+> see `docs/NEXT_SESSION.md`) and **must be verified before deploy.** The harness
+> mounts the nested `/api/forge/*` routes explicitly; Vercel resolves them from the
+> file path natively, so no production routing change is needed.
 
 Shared server libs (never imported by the browser):
 
@@ -137,8 +151,9 @@ Shared server libs (never imported by the browser):
 - `/api/_lib/supabase.js` — admin Supabase client from `SUPABASE_URL` +
   `SUPABASE_SERVICE_ROLE_KEY`.
 - `/api/_lib/forge.js` — shared Forge generation foundation: `generateStructured`
-  (strict-JSON, validate, one repair, ≤2 calls), `caps()`, `webSearchTool()`,
-  `readJsonBody`, `ForgeError`/`sendError`, and the `PIPELINE` contracts.
+  (two modes — strict-JSON text *or* forced tool-use via `outputTool`; validate +
+  one repair + ≤2 calls), `caps()`, `webSearchTool()`, `readJsonBody`,
+  `ForgeError`/`sendError`, and the `PIPELINE` contracts.
 
 Future endpoints (later phases, sketched): `/api/profile`, `/api/discover`,
 `/api/blueprint`, `/api/forge`, `/api/sentinel`, `/api/studio` — each a
