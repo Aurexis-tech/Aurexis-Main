@@ -5,7 +5,7 @@
 // renders the markup + empty containers; this code owns all the dynamic DOM.
 import { RM, $, $$, wait, GC } from './dom.js'
 import { STEPS, state } from './state.js'
-import { QS, NOUN, TRAITS, FOCUS_ADJ, FPROD, VERS, CHECKS, OVERSIGHT, GEO, CHN } from './data.js'
+import { QS, NOUN, TRAITS, FOCUS_ADJ, CHECKS, OVERSIGHT, GEO, CHN } from './data.js'
 import { traitScores, radarPoint, pickFollowups, fmtUSD, sparkPts, model, computeOpps } from './logic.js'
 import { notifyScreen } from './bridge.js'
 
@@ -132,53 +132,12 @@ function afterProfile(){
    component (reusing lib/anim.js verbatim). The engine no longer writes #opps. */
 
 /* ===== 3 forge ===== */
-function buildLadder(){ $("#vsteps").innerHTML=VERS.map((v,i)=>`<div class="vstep ${i<3?'done':''} ${i===3?'cur':''}"><div class="v">${v[0]}</div><div class="d">${v[1]}</div></div>`).join(""); }
-function buildArch(){
-  const o=state.chosen, n=o.b.length, cx=160, cy=105, R=72;
-  let nodes=`<circle cx="${cx}" cy="${cy}" r="22" fill="rgba(231,185,77,.12)" stroke="#e7b94d" stroke-width="1.5"/>
-    <text x="${cx}" y="${cy}" fill="#f5ecd2" font-size="8" font-family="Hanken Grotesk,Arial" text-anchor="middle" dominant-baseline="middle">Aurexis</text>
-    <text x="${cx}" y="${cy+10}" fill="#9aabc0" font-size="6.5" font-family="Hanken Grotesk,Arial" text-anchor="middle">core</text>`;
-  let lines="",flows="";
-  o.b.forEach((b,i)=>{const ang=-Math.PI/2+i*2*Math.PI/n; const x=cx+R*Math.cos(ang), y=cy+R*Math.sin(ang);
-    const len=Math.hypot(x-cx,y-cy);
-    lines+=`<line class="archline" data-i="${i}" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#4cd0b3" stroke-width="1.4" stroke-dasharray="${len}" stroke-dashoffset="${len}" style="transition:stroke-dashoffset .5s ease;opacity:.7"/>`;
-    flows+=`<line class="archflow" data-i="${i}" x1="${x}" y1="${y}" x2="${cx}" y2="${cy}" stroke="#f6d27e" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1 9"/>`;
-    nodes+=`<g class="archnode" data-i="${i}" style="opacity:.25;transition:opacity .4s">
-      <circle cx="${x}" cy="${y}" r="15" fill="#0c1626" stroke="rgba(76,208,179,.5)" stroke-width="1.2"/>
-      <text x="${x}" y="${y}" fill="#cfe9e2" font-size="5.6" font-family="Hanken Grotesk,Arial" text-anchor="middle" dominant-baseline="middle">${b.split(" ")[0]}</text></g>`;});
-  $("#archSvg").innerHTML=lines+flows+nodes;
-}
-function initForge(){
-  const o=state.chosen; ["#fName","#dName","#sealName","#finalName"].forEach(id=>$(id).textContent=o.t);
-  $("#forgeFlow").innerHTML=FPROD.map(p=>`<div class="fp" data-p="${p[1]}"><div class="ic">${p[0]}</div><div><div class="nm">${p[1]}</div><div class="ds">${p[2]}</div></div><div class="st">queued</div></div>`).join("");
-  $("#bldlist").innerHTML=o.b.map(b=>`<span class="chip">${b}</span>`).join("");
-  $("#forgeLog").innerHTML=""; $("#forgeBar").style.width="0%"; $("#forgePct").textContent="0%";
-  buildLadder(); buildArch(); $("#toSentinel").disabled=true; $("#runForge").disabled=false;
-}
-async function runForge(){
-  $("#runForge").disabled=true;
-  const o=state.chosen, fps=$$('#forgeFlow .fp'), chips=$$('#bldlist .chip'), log=$("#forgeLog");
-  const lines=[["a","Scout","scanning market signal for "+o.t+"…"],["a","Scout","opportunity confirmed · ranking & simulating"],
-   ["a","Architect","designing optimal reality · blueprint drafted"],["t","Sentinel","oversight attached · watching every step"],
-   ["a","Creator","provisioning: "+o.b[0]],["a","Creator","building: "+o.b[1]],["a","Creator","wiring: "+o.b[2]+" + "+(o.b[3]||"workflows")],
-   ["a","Operator","deploying infrastructure · launching"],["a","Operator","health green · auto-scale armed"],
-   ["a","Evolver","loop live · observe→analyse→simulate→improve→deploy"],["t","Sentinel","all steps verified ✓ · to certification"]];
-  const order=["Scout","Architect","Creator","Operator","Evolver"]; let li=0;
-  const arclines=$$('#archSvg .archline'), arcnodes=$$('#archSvg .archnode'), arcflows=$$('#archSvg .archflow');
-  for(let i=0;i<order.length;i++){
-    const fp=fps[i]; fp.classList.add("act"); fp.querySelector(".st").textContent="running…";
-    while(li<lines.length && (lines[li][1]===order[i] || lines[li][1]==="Sentinel")){
-      const L=lines[li]; if(L[1]!==order[i] && i<2) break; addLog(log,L); await wait(340); li++;
-      if(L[1]==="Sentinel" && i<2) break;
-    }
-    if(order[i]==="Creator"){ for(let c=0;c<chips.length;c++){ chips[c].classList.add("on");
-      if(arclines[c]){arclines[c].style.strokeDashoffset="0";} if(arcnodes[c]){arcnodes[c].style.opacity="1";} if(arcflows[c]){arcflows[c].classList.add("on");} await wait(240);} }
-    await wait(180); fp.classList.remove("act"); fp.classList.add("fin"); fp.querySelector(".st").textContent="done ✓";
-    const pct=Math.round((i+1)/order.length*100); $("#forgeBar").style.width=pct+"%"; $("#forgePct").textContent=pct+"%";
-  }
-  while(li<lines.length){ addLog(log,lines[li]); li++; await wait(280); }
-  $("#toSentinel").disabled=false;
-}
+/* Forge is now a declarative React component (screens/Forge.jsx): a REAL
+   client-orchestrated 5-stage pipeline (Scout→Architect→Creator→Operator→Evolver),
+   one /api/forge/* call per stage threaded into the next. The engine no longer
+   simulates the build — it only sets the downstream screen names from the chosen
+   opportunity and signals entry via notifyScreen("forge") in the wiring below.
+   `addLog` is kept here because Sentinel's runSentinel() still uses it. */
 function addLog(log,L){const d=document.createElement("div");d.className="l";
   d.innerHTML=`<span class="${L[0]}">${L[1]}</span> <span style="color:var(--dim)">›</span> ${L[2]}`; log.appendChild(d); log.scrollTop=log.scrollHeight;}
 
@@ -299,8 +258,12 @@ export function boot(){
   $("#begin").onclick=()=>{ $("#intro").classList.add("gone"); };
   $("#toDiscover").onclick=()=>{state.opps=computeOpps(state);notifyScreen("discover");go("discover");};
   $("#toBlueprint").onclick=()=>{notifyScreen("blueprint");go("blueprint");};
-  $("#toForge").onclick=()=>{initForge();go("forge");};
-  $("#runForge").onclick=runForge;
+  $("#toForge").onclick=()=>{
+    // Forge's pipeline owns its own UI; just carry the chosen name to the
+    // downstream simulated screens (Sentinel/Dashboard/Grow) and signal entry.
+    const o=state.chosen; ["#dName","#sealName","#finalName"].forEach(id=>{const el=$(id); if(el) el.textContent=o.t;});
+    notifyScreen("forge"); go("forge");
+  };
   $("#toSentinel").onclick=()=>{initSentinel();go("sentinel");};
   $("#runSentinel").onclick=runSentinel;
   $("#toStudio").onclick=()=>{initGeo();go("grow");};

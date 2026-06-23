@@ -95,12 +95,77 @@ Phase 0 (plumbing only — none wired into prototype screens):
 | `/api/ai-ping` | GET | Calls Claude with a fixed trivial prompt, returns the text | `ANTHROPIC_API_KEY` (server) |
 | `/api/db-ping` | GET | Trivial Supabase connectivity check, returns ok/error (no key leakage) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server) |
 
+### Forge pipeline (5 stages — Scout → Architect → Creator → Operator → Evolver)
+
+Forge is a chained pipeline; each stage consumes the prior stage's output and
+returns a **real AI-generated artifact for a human to review** — never an
+autonomous actor, never a guarantee. All stages share `/api/_lib/forge.js`
+(`generateStructured` + caps + repair + web_search), so each stage is mostly
+"schema + prompt". `generateStructured` has two output modes: **strict-JSON text**
+(plain data; supports web_search) and **forced tool-use** (`outputTool`) — the
+latter is required for code-emitting stages because the SDK returns the tool's
+parsed `input`, so embedded code/quotes/newlines can never break JSON parsing (the
+classic "LLM JSON with embedded code" failure). The chained type contracts
+(`ScoutInput → OpportunityReport → Blueprint → Scaffold → OpsPlan →
+ImprovementPlan`) are defined as JSDoc/`typedef` at the top of `/api/_lib/forge.js`
+and as the exported `PIPELINE` array.
+
+| Endpoint | Method | Purpose | Secrets used |
+|----------|--------|---------|--------------|
+| `/api/forge/scout` | POST | **Stage 1 — Scout.** Claude + server-side **web_search** gather current market/trend/competition signals, then return a ranked **Opportunity Report** (3–6 opportunities with market-potential/competition/timing/entry/risks, plus real `sources[]` and an honest `disclaimer`). Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/architect` | POST | **Stage 2 — Architect.** Consumes ONE chosen opportunity from Scout's report (+ profile/domain) and returns a **Reality Blueprint**: five coherent models — `businessModel`, `productModel`, `systemModel`, `growthModel`, `infrastructureModel` — plus `keyRisks` and an honest `disclaimer`. **web_search OFF** (design step over already-scouted data; the path to enable it exists but is off), so it is much cheaper than Scout. Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/creator` | POST | **Stage 3 — Creator.** Consumes the Reality Blueprint and generates a SMALL, COHERENT, **runnable** starter project for the single most central piece of the `systemModel`. Output: `summary`, `stack`, `runInstructions`, `files[]` (4–10), `whatsRealVsStub` (honesty surface), `nextSteps`, honest `disclaimer`. Uses **forced tool-use** (files contain real code). Prompted to be runnable with **no secrets** (external services mocked) and minimal setup. Byte caps server-side (≤8 KB/file, ≤90 KB total, ≤10 files, `truncated` flag); web_search OFF. | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/operator` | POST | **Stage 4 — Operator.** Consumes Creator's `starter` (heavy `files[]` optional) + blueprint context and returns an **operations PLAN**: `monitoring` (signals + dashboards), `reliability` (SLOs/alerting/incidentProcess), `scaling` (triggers/approach/costControls), `maintenance` (routines/securityHygiene), a `runbook[]`, and an honest `disclaimer`. Strict-JSON text (mode B), web_search OFF, one repair retry, ≤2 model calls; caps server-side (truncate + `truncated`). **It is a plan to implement on a real deployment — nothing is auto-operated.** | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/evolver` | POST | **Stage 5 — Evolver.** Consumes the whole chain (opportunity + blueprint + starter + operations, all optional) and returns an **improvement ROADMAP**: the `cycle` (Observe→Analyze→Simulate→Improve→Deploy, described *as a human-run process*), concrete `experiments[]` (hypothesis/metric/effort), a time-phased `roadmap` (30/90/365-day), `guardrails[]`, and an honest `disclaimer`. Strict-JSON text (mode B), web_search OFF, one repair retry, ≤2 model calls; caps server-side. **It is a roadmap a human runs — not an autonomous or self-improving system.** | `ANTHROPIC_API_KEY` (server) |
+
+Honest scope: the Opportunity Report is an **AI-generated report to investigate**
+(not a guarantee a real gap exists), the Reality Blueprint is an **AI-generated
+design to evaluate** (not "the future reality" as fact), the Creator output is
+**a real starter project you can build from** — a local-runnable skeleton, **NOT** a
+running business, **NOT** deployed infrastructure, and not production-ready/secure —
+the Operator output is **a plan for operating** (nothing is being monitored/scaled
+automatically), and the Evolver output is **an improvement roadmap to run yourself**
+(not autonomous, not self-improving — there is no live product in this pipeline).
+Banned everywhere: "keeps reality alive", "your reality is now operating/evolving",
+present-tense "continuously monitors/optimizes", "autonomously deploys",
+"self-improving system". The blueprint's `infrastructureModel` describes the
+*intended* production infra; the scaffold/plans are *local/recommended* — a
+deliberate, stated distinction. Input contracts chain exactly: Architect's body is
+one Scout `opportunity`; Creator's body is `{ blueprint }`; Operator's body is
+`{ starter, blueprint? }`; Evolver's body is the (optional) chain
+`{ starter?, blueprint?, opportunity?, operations? }`.
+
+> **Verification status — Forge endpoints (all 5 stages backend-complete).** The
+> full pipeline is verified **via the local function harness only** (real keys, real
+> Claude calls), end-to-end **Scout → Architect → Creator → Operator → Evolver** with
+> real chained data for "DisputeKit". Scout: 6 opportunities within caps, 8 real
+> source URLs; repair-retry + 2-call guard unit-tested. Architect: five substantive
+> models, chained from a real Scout opportunity. Creator: generated starter was
+> **actually run** outside the repo (`node server.js`, zero deps, `GET /` + `POST`
+> endpoint, headless UI render with **0 console errors** — PASS on "does it run").
+> Operator + Evolver: valid JSON within caps, disclaimers present, all **400/405**
+> validation paths checked, **no key leak**, and a **copy audit** confirmed **no
+> banned present-tense autonomy language** (only negated disclaimers / the model's own
+> "NOT autonomous" framing). Every stage logs token usage. **`vercel dev` and any
+> deploy remain UNPROVEN** for these endpoints (account mismatch + no static-project
+> link — see `docs/NEXT_SESSION.md`) and **must be verified before deploy.** The
+> harness mounts the nested `/api/forge/*` routes explicitly; Vercel resolves them
+> from the file path natively, so no production routing change is needed. **The Forge
+> UI now exists** — a real client-orchestrated 5-stage pipeline runner over these
+> endpoints, harness/local-verified end-to-end (see `docs/FORGE_UI.md`). **Next:** the
+> real `vercel dev`/deploy runtime proof, incl. solving Scout's ~90s call vs.
+> serverless timeouts.
+
 Shared server libs (never imported by the browser):
 
 - `/api/_lib/anthropic.js` — Claude client + `complete()` helper, reads
   `ANTHROPIC_API_KEY`, pins model `claude-sonnet-4-6`.
 - `/api/_lib/supabase.js` — admin Supabase client from `SUPABASE_URL` +
   `SUPABASE_SERVICE_ROLE_KEY`.
+- `/api/_lib/forge.js` — shared Forge generation foundation: `generateStructured`
+  (two modes — strict-JSON text *or* forced tool-use via `outputTool`; validate +
+  one repair + ≤2 calls), `caps()`, `webSearchTool()`, `readJsonBody`,
+  `ForgeError`/`sendError`, and the `PIPELINE` contracts.
 
 Future endpoints (later phases, sketched): `/api/profile`, `/api/discover`,
 `/api/blueprint`, `/api/forge`, `/api/sentinel`, `/api/studio` — each a
