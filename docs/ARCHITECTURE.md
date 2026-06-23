@@ -150,8 +150,11 @@ one Scout `opportunity`; Creator's body is `{ blueprint }`; Operator's body is
 > deploy remain UNPROVEN** for these endpoints (account mismatch + no static-project
 > link — see `docs/NEXT_SESSION.md`) and **must be verified before deploy.** The
 > harness mounts the nested `/api/forge/*` routes explicitly; Vercel resolves them
-> from the file path natively, so no production routing change is needed. **Next:**
-> the Forge UI and the real `vercel dev`/deploy runtime proof.
+> from the file path natively, so no production routing change is needed. **The Forge
+> UI now exists** — a real client-orchestrated 5-stage pipeline runner over these
+> endpoints, harness/local-verified end-to-end (see `docs/FORGE_UI.md`). **Next:** the
+> real `vercel dev`/deploy runtime proof, incl. solving Scout's ~90s call vs.
+> serverless timeouts.
 
 Shared server libs (never imported by the browser):
 
