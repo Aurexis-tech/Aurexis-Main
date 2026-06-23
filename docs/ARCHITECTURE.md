@@ -108,20 +108,27 @@ at the top of `/api/_lib/forge.js` and as the exported `PIPELINE` array.
 | Endpoint | Method | Purpose | Secrets used |
 |----------|--------|---------|--------------|
 | `/api/forge/scout` | POST | **Stage 1 — Scout.** Claude + server-side **web_search** gather current market/trend/competition signals, then return a ranked **Opportunity Report** (3–6 opportunities with market-potential/competition/timing/entry/risks, plus real `sources[]` and an honest `disclaimer`). Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
+| `/api/forge/architect` | POST | **Stage 2 — Architect.** Consumes ONE chosen opportunity from Scout's report (+ profile/domain) and returns a **Reality Blueprint**: five coherent models — `businessModel`, `productModel`, `systemModel`, `growthModel`, `infrastructureModel` — plus `keyRisks` and an honest `disclaimer`. **web_search OFF** (design step over already-scouted data; the path to enable it exists but is off), so it is much cheaper than Scout. Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
 
-Honest scope: the Opportunity Report is an **AI-generated report to investigate**,
-not a guarantee that a real market gap exists or that any opportunity will
-succeed. Stages 2–5 are sketched in `_lib/forge.js` and arrive in later prompts.
+Honest scope: the Opportunity Report is an **AI-generated report to investigate**
+(not a guarantee a real gap exists), and the Reality Blueprint is an **AI-generated
+design to evaluate** (not "the future reality" as fact, not a guarantee it will
+work). Input contract: Architect's request body **is** one `opportunity` object
+exactly as Scout emits it, plus `domain`/`profile`. Stages 3–5 (Creator → Operator
+→ Evolver) are sketched in `_lib/forge.js` and arrive in later prompts.
 
-> **Verification status — Forge endpoints.** `/api/forge/scout` is verified **via
-> the local function harness only** (real keys; real Claude call with live
-> web_search: HTTP 200, 6 opportunities within caps, 8 real source URLs, disclaimer
-> present, no key leak; repair-retry + 2-call guard unit-tested). **`vercel dev`
-> and any deploy remain UNPROVEN** for these endpoints (account mismatch + no
-> static-project link — see `docs/NEXT_SESSION.md`) and **must be verified before
-> deploy.** The harness mounts the nested `/api/forge/scout` route explicitly;
-> Vercel resolves it from the file path natively, so no production routing change
-> is needed.
+> **Verification status — Forge endpoints.** `/api/forge/scout` and
+> `/api/forge/architect` are verified **via the local function harness only**
+> (real keys, real Claude calls). Scout: HTTP 200, 6 opportunities within caps, 8
+> real source URLs, disclaimer present, no key leak; repair-retry + 2-call guard
+> unit-tested. Architect: verified **chained** — a real Scout opportunity (#0) was
+> fed straight into Architect → HTTP 200, all five models substantive and within
+> caps, disclaimer present, no key leak (and ~50× cheaper input than Scout since
+> web_search is off). **`vercel dev` and any deploy remain UNPROVEN** for these
+> endpoints (account mismatch + no static-project link — see
+> `docs/NEXT_SESSION.md`) and **must be verified before deploy.** The harness mounts
+> the nested `/api/forge/*` routes explicitly; Vercel resolves them from the file
+> path natively, so no production routing change is needed.
 
 Shared server libs (never imported by the browser):
 
