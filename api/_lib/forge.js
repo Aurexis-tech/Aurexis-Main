@@ -137,6 +137,13 @@ function extractText(msg) {
   return (msg.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('')
 }
 
+// Pull the parsed input of a forced tool_use block (robust structured output —
+// the SDK assembles/escapes it, so embedded code never breaks JSON parsing).
+function toolInput(msg, name) {
+  const tu = (msg.content || []).find((b) => b.type === 'tool_use' && b.name === name)
+  return tu ? tu.input : null
+}
+
 // Pull the REAL urls/titles the model searched, from web_search_tool_result blocks
 // (and text-block citations as a fallback). These are what the UI will cite.
 function collectSources(msg, into) {
@@ -169,18 +176,26 @@ function stripToJson(text) {
 }
 
 /**
- * generateStructured — generate strict-JSON data from Claude, validate, repair once.
+ * generateStructured — generate structured data from Claude, validate, repair once.
+ *
+ * Two output modes:
+ *  - outputTool (RECOMMENDED for code/complex payloads): forced tool-use. The SDK
+ *    returns the tool's parsed `input` object, so embedded code/quotes/newlines can
+ *    never break JSON parsing (the classic "LLM JSON with embedded code" failure).
+ *  - strict-JSON text (default): the model returns JSON text we parse. Fine for
+ *    plain data; supports optional server `tools` (e.g. web_search) passthrough.
  *
  * @param {Object} o
- * @param {string} o.system                         system prompt (must demand strict JSON)
+ * @param {string} o.system                         system prompt
  * @param {string} o.user                           user prompt
  * @param {(data:any)=>(string|null)} o.schema      validator: return null if valid, else why
  * @param {number} [o.maxTokens=4000]
- * @param {Array}  [o.tools]                         e.g. [webSearchTool()] — server tools
+ * @param {Array}  [o.tools]                         e.g. [webSearchTool()] — server tools (text mode only)
+ * @param {Object} [o.outputTool]                   { name, description, input_schema } — forces tool-use mode
  * @returns {Promise<{data:any, usage:{input_tokens:number,output_tokens:number}, sources:Array<{title:string,url:string}>, truncated:boolean}>}
- * @throws {ForgeError} 502 if no valid JSON after the single repair / call cap
+ * @throws {ForgeError} 502 if no valid output after the single repair / call cap
  */
-async function generateStructured({ system, user, schema, maxTokens = 4000, tools }) {
+async function generateStructured({ system, user, schema, maxTokens = 4000, tools, outputTool }) {
   if (typeof schema !== 'function') throw new ForgeError('generateStructured: schema must be a validator function', 500)
   const client = getClient()
   const usage = { input_tokens: 0, output_tokens: 0 }
@@ -188,59 +203,80 @@ async function generateStructured({ system, user, schema, maxTokens = 4000, tool
   let calls = 0
   let lastStop = null
 
-  // One model call. `withTools` decides whether server tools (web_search) are attached.
-  async function call(messages, withTools) {
+  // One model call → returns the raw message. `mode` picks tooling.
+  async function call(userContent, mode) {
     if (calls >= MAX_MODEL_CALLS) throw new ForgeError('model-call cap reached', 502, 'AI did not return a valid result. Please try again.')
     calls++
-    const params = { model: MODEL, max_tokens: maxTokens, system, messages }
-    if (withTools && tools && tools.length) params.tools = tools
+    const params = { model: MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: userContent }] }
+    if (mode === 'force-tool') { params.tools = [outputTool]; params.tool_choice = { type: 'tool', name: outputTool.name } }
+    else if (mode === 'web-search' && tools && tools.length) { params.tools = tools }
     const msg = await client.messages.create(params)
     usage.input_tokens += (msg.usage && msg.usage.input_tokens) || 0
     usage.output_tokens += (msg.usage && msg.usage.output_tokens) || 0
     lastStop = msg.stop_reason
     collectSources(msg, sources)
     console.error(`[forge] call ${calls} stop_reason=${msg.stop_reason} out_tokens=${(msg.usage && msg.usage.output_tokens) || 0}`)
-    return extractText(msg)
+    return msg
   }
 
+  const dedupeSources = () => {
+    const seen = new Set(); const out = []
+    for (const s of sources) { if (s.url && !seen.has(s.url)) { seen.add(s.url); out.push(s) } }
+    return out
+  }
+
+  // ── Mode A: forced tool-use (robust structured output) ──
+  if (outputTool) {
+    let msg = await call(user, 'force-tool')
+    let data = toolInput(msg, outputTool.name)
+    let why = data ? schema(data) : 'no tool output'
+    if (why) {
+      msg = await call(
+        user + '\n\nYour previous ' + outputTool.name + ' call was invalid (' + why + '). ' +
+        'Call ' + outputTool.name + ' again with every required field present and correct.',
+        'force-tool',
+      )
+      data = toolInput(msg, outputTool.name)
+      why = data ? schema(data) : 'no tool output'
+    }
+    if (why) throw new ForgeError('invalid tool output after repair: ' + why, 502, 'AI did not return a valid result. Please try again.')
+    return { data, usage, sources: dedupeSources(), truncated: lastStop === 'max_tokens' }
+  }
+
+  // ── Mode B: strict-JSON text (optionally with web_search) ──
   const wantTools = !!(tools && tools.length)
-  let text
+  let msg
   try {
-    text = await call([{ role: 'user', content: user }], wantTools)
+    msg = await call(user, wantTools ? 'web-search' : 'plain')
   } catch (e) {
-    // If the tools call failed (e.g. web_search unavailable on the account), fall
-    // back ONCE to a plain generation so the endpoint still returns a valid result.
+    // If the tools call failed (e.g. web_search unavailable), fall back ONCE to a
+    // plain generation so the endpoint still returns a valid result.
     if (wantTools && !(e instanceof ForgeError && e.status === 502 && /cap reached/.test(e.message))) {
       console.error('[forge] tooled call failed, falling back without tools:', String(e && e.message))
-      text = await call([{ role: 'user', content: user }], false)
+      msg = await call(user, 'plain')
     } else { throw e }
   }
+  let text = extractText(msg)
 
   let data = null
   try { data = JSON.parse(stripToJson(text)) } catch { /* invalid */ }
   let why = data ? schema(data) : 'non-JSON output'
 
-  // One repair retry — reformat the prior text into valid JSON (no tools, cheap).
   if (why) {
-    const repairText = await call([{
-      role: 'user',
-      content:
-        'The text below was supposed to be valid JSON ONLY (no prose, no code fences) but it was invalid (' + why + ').\n' +
-        'Return ONLY the corrected, valid JSON — same data, fixed format:\n\n' + String(text).slice(0, 6000),
-    }], false)
+    msg = await call(
+      'The text below was supposed to be valid JSON ONLY (no prose, no code fences) but it was invalid (' + why + ').\n' +
+      'Return ONLY the corrected, valid JSON — same data, fixed format:\n\n' + String(text).slice(0, 6000),
+      'plain',
+    )
+    text = extractText(msg)
     data = null
-    try { data = JSON.parse(stripToJson(repairText)) } catch { /* invalid */ }
+    try { data = JSON.parse(stripToJson(text)) } catch { /* invalid */ }
     why = data ? schema(data) : 'non-JSON output'
   }
 
   if (why) throw new ForgeError('invalid structured output after repair: ' + why, 502, 'AI did not return a valid result. Please try again.')
 
-  // de-dupe sources by url, preserving order
-  const seen = new Set()
-  const uniqueSources = []
-  for (const s of sources) { if (s.url && !seen.has(s.url)) { seen.add(s.url); uniqueSources.push(s) } }
-
-  return { data, usage, sources: uniqueSources, truncated: lastStop === 'max_tokens' }
+  return { data, usage, sources: dedupeSources(), truncated: lastStop === 'max_tokens' }
 }
 
 module.exports = {
