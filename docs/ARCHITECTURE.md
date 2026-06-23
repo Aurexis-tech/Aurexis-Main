@@ -95,12 +95,43 @@ Phase 0 (plumbing only — none wired into prototype screens):
 | `/api/ai-ping` | GET | Calls Claude with a fixed trivial prompt, returns the text | `ANTHROPIC_API_KEY` (server) |
 | `/api/db-ping` | GET | Trivial Supabase connectivity check, returns ok/error (no key leakage) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server) |
 
+### Forge pipeline (5 stages — Scout → Architect → Creator → Operator → Evolver)
+
+Forge is a chained pipeline; each stage consumes the prior stage's output and
+returns a **real AI-generated artifact for a human to review** — never an
+autonomous actor, never a guarantee. All stages share `/api/_lib/forge.js`
+(`generateStructured` + caps + repair + web_search), so each stage is mostly
+"schema + prompt". The chained type contracts (`ScoutInput → OpportunityReport →
+Blueprint → Scaffold → OpsPlan → ImprovementPlan`) are defined as JSDoc/`typedef`
+at the top of `/api/_lib/forge.js` and as the exported `PIPELINE` array.
+
+| Endpoint | Method | Purpose | Secrets used |
+|----------|--------|---------|--------------|
+| `/api/forge/scout` | POST | **Stage 1 — Scout.** Claude + server-side **web_search** gather current market/trend/competition signals, then return a ranked **Opportunity Report** (3–6 opportunities with market-potential/competition/timing/entry/risks, plus real `sources[]` and an honest `disclaimer`). Strict-JSON, schema-validated, one repair retry, ≤2 model calls; caps enforced server-side (truncate + `truncated` flag). | `ANTHROPIC_API_KEY` (server) |
+
+Honest scope: the Opportunity Report is an **AI-generated report to investigate**,
+not a guarantee that a real market gap exists or that any opportunity will
+succeed. Stages 2–5 are sketched in `_lib/forge.js` and arrive in later prompts.
+
+> **Verification status — Forge endpoints.** `/api/forge/scout` is verified **via
+> the local function harness only** (real keys; real Claude call with live
+> web_search: HTTP 200, 6 opportunities within caps, 8 real source URLs, disclaimer
+> present, no key leak; repair-retry + 2-call guard unit-tested). **`vercel dev`
+> and any deploy remain UNPROVEN** for these endpoints (account mismatch + no
+> static-project link — see `docs/NEXT_SESSION.md`) and **must be verified before
+> deploy.** The harness mounts the nested `/api/forge/scout` route explicitly;
+> Vercel resolves it from the file path natively, so no production routing change
+> is needed.
+
 Shared server libs (never imported by the browser):
 
 - `/api/_lib/anthropic.js` — Claude client + `complete()` helper, reads
   `ANTHROPIC_API_KEY`, pins model `claude-sonnet-4-6`.
 - `/api/_lib/supabase.js` — admin Supabase client from `SUPABASE_URL` +
   `SUPABASE_SERVICE_ROLE_KEY`.
+- `/api/_lib/forge.js` — shared Forge generation foundation: `generateStructured`
+  (strict-JSON, validate, one repair, ≤2 calls), `caps()`, `webSearchTool()`,
+  `readJsonBody`, `ForgeError`/`sendError`, and the `PIPELINE` contracts.
 
 Future endpoints (later phases, sketched): `/api/profile`, `/api/discover`,
 `/api/blueprint`, `/api/forge`, `/api/sentinel`, `/api/studio` — each a
